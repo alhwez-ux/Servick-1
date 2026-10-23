@@ -172,8 +172,10 @@ void main() {
     expect(find.text('فهد سعيد الشهري'), findsOneWidget);
     expect(find.text('تغيير زيت في النخيل'), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const Key('accept-SV-1041')));
     await tester.tap(find.byKey(const Key('accept-SV-1041')));
     await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('complete-SV-1041')));
     await tester.tap(find.byKey(const Key('complete-SV-1041')));
     await tester.pump();
 

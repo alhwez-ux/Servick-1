@@ -4,6 +4,7 @@ import '../app_scope.dart';
 import '../data/catalog.dart';
 import '../data/format.dart';
 import '../models/models.dart';
+import '../models/order.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/common.dart';
@@ -97,6 +98,25 @@ class ProviderDashboardScreen extends StatelessWidget {
                 ),
               ),
             ),
+            if (technician != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton(
+                key: const Key('open-nearby-orders'),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                    ServickRoutes.providerOrders,
+                    arguments: ProviderOrdersArgs(
+                      providerId: session.id,
+                      providerCity: technician.city,
+                    ),
+                  );
+                },
+                child: Text(
+                  'طلبات الصيانة القريبة (${technician.city}) · ${model.pendingOrdersIn(technician.city).length}',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
             const SizedBox(height: 18),
             const SectionTitle('طلبات العملاء'),
             const SizedBox(height: 10),

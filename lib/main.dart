@@ -3,12 +3,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_scope.dart';
 import 'models/models.dart';
+import 'models/order.dart';
 import 'routes.dart';
 import 'screens/booking_screen.dart';
 import 'screens/emergency_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
 import 'screens/provider_login_screen.dart';
+import 'screens/provider_orders_screen.dart';
 import 'screens/request_details_screen.dart';
 import 'screens/requests_screen.dart';
 import 'screens/subscription_renewal_screen.dart';
@@ -67,6 +69,9 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
       providerId: settings.arguments! as String,
     ),
     ServickRoutes.providerDashboard => const ProviderDashboardScreen(),
+    ServickRoutes.providerOrders => _orders(
+      settings.arguments! as ProviderOrdersArgs,
+    ),
     _ => null,
   };
   if (page == null) return null;
@@ -75,4 +80,11 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
 
 Widget _details(RequestRouteArgs args) {
   return RequestDetailsScreen(request: args.request, justSent: args.justSent);
+}
+
+Widget _orders(ProviderOrdersArgs args) {
+  return ProviderOrdersScreen(
+    providerId: args.providerId,
+    providerCity: args.providerCity,
+  );
 }

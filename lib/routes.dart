@@ -8,4 +8,5 @@ abstract final class ServickRoutes {
   static const providerLogin = '/provider-login';
   static const providerRenew = '/provider-renew';
   static const providerDashboard = '/provider-dashboard';
+  static const providerOrders = '/provider-orders';
 }

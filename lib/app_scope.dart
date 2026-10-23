@@ -1,9 +1,11 @@
 import 'package:flutter/widgets.dart';
 
 import 'data/catalog.dart';
+import 'data/orders.dart';
 import 'data/phone.dart';
 import 'data/providers.dart';
 import 'models/models.dart';
+import 'models/order.dart';
 import 'models/provider.dart';
 
 class AppModel extends ChangeNotifier {
@@ -11,16 +13,21 @@ class AppModel extends ChangeNotifier {
     DateTime Function()? now,
     String? city,
     List<ProviderAccount>? providers,
+    List<ServiceOrder>? orders,
   }) : _now = now ?? DateTime.now,
        _city = city ?? cities.first,
        _providers = List<ProviderAccount>.from(
          providers ?? demoProviders((now ?? DateTime.now)()),
+       ),
+       _orders = List<ServiceOrder>.from(
+         orders ?? demoOrders((now ?? DateTime.now)()),
        );
 
   final DateTime Function() _now;
   String _city;
   final List<ServiceRequest> requests = [];
   final List<ProviderAccount> _providers;
+  final List<ServiceOrder> _orders;
   ProviderAccount? _session;
   int _sequence = 1040;
 
@@ -76,8 +83,45 @@ class AppModel extends ChangeNotifier {
       status: assignNow ? RequestStatus.assigned : RequestStatus.waiting,
     );
     requests.insert(0, request);
+    if (technicianId == null) {
+      _orders.insert(
+        0,
+        ServiceOrder(
+          id: 'ord-${request.id}',
+          clientName: 'عميل Servick',
+          serviceTitle: categoryById(categoryId).title,
+          notes: request.details.isEmpty ? request.summary : request.details,
+          city: city,
+          createdAt: request.createdAt,
+          status: 'pending',
+          requestId: request.id,
+        ),
+      );
+    }
     notifyListeners();
     return request;
+  }
+
+  List<ServiceOrder> pendingOrdersIn(String city) {
+    return _orders
+        .where((order) => order.city == city && order.status == 'pending')
+        .toList();
+  }
+
+  String? acceptOrder({required String orderId, required String providerId}) {
+    final index = _orders.indexWhere((order) => order.id == orderId);
+    if (index < 0) return 'الطلب غير موجود';
+    final order = _orders[index];
+    if (order.status != 'pending') return 'هذا الطلب لم يعد متاحاً';
+    final account = providerById(providerId);
+    if (account == null) return 'حساب المزود غير معروف';
+    _orders[index] = order.copyWith(status: 'accepted', providerId: providerId);
+    final requestId = order.requestId;
+    if (requestId != null) {
+      acceptRequest(requestId: requestId, technicianId: account.technicianId);
+    }
+    notifyListeners();
+    return null;
   }
 
   ProviderLoginResult loginProvider({
