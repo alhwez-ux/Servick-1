@@ -35,6 +35,7 @@ class AppModel extends ChangeNotifier {
   final Map<String, ClientSubscription> _clients = {};
   int _sequence = 1040;
   int _clientOrderSequence = 0;
+  bool _adminUnlocked = false;
 
   String get city => _city;
 
@@ -51,6 +52,14 @@ class AppModel extends ChangeNotifier {
   }
 
   ProviderAccount? get providerSession => _session;
+
+  bool get adminUnlocked => _adminUnlocked;
+
+  void unlockAdmin() {
+    if (_adminUnlocked) return;
+    _adminUnlocked = true;
+    notifyListeners();
+  }
 
   ClientSubscription? clientSubscription(String clientId) => _clients[clientId];
 

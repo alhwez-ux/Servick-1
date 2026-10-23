@@ -80,13 +80,12 @@ class ClientHomeScreen extends StatelessWidget {
               ),
               Center(
                 child: TextButton.icon(
-                  key: const Key('open-admin-dashboard'),
+                  key: const Key('open-admin-login'),
                   onPressed: () {
-                    Navigator.of(context)
-                        .pushNamed(ServickRoutes.adminDashboard);
+                    Navigator.of(context).pushNamed(ServickRoutes.adminLogin);
                   },
                   icon: const Icon(Icons.admin_panel_settings_outlined),
-                  label: const Text('لوحة تحكم المالك'),
+                  label: const Text('دخول مالك التطبيق'),
                 ),
               ),
               Center(

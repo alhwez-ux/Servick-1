@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
+import 'package:servick/data/admin.dart';
 import 'package:servick/data/providers.dart';
 import 'package:servick/main.dart';
 import 'package:servick/models/provider.dart';
@@ -54,8 +55,16 @@ void main() {
       await tester.pumpWidget(ServickApp(model: model));
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.byKey(const Key('open-admin-dashboard')));
-      await tester.tap(find.byKey(const Key('open-admin-dashboard')));
+      await tester.ensureVisible(find.byKey(const Key('open-admin-login')));
+      await tester.tap(find.byKey(const Key('open-admin-login')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('admin-passcode')),
+        demoAdminPasscode,
+      );
+      await tester.tap(find.byKey(const Key('admin-login')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 800));
       await tester.pumpAndSettle();
 
       expect(find.text('لوحة تحكم المالك | Servick Admin'), findsOneWidget);

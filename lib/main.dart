@@ -7,6 +7,7 @@ import 'models/models.dart';
 import 'models/order.dart';
 import 'routes.dart';
 import 'screens/admin_dashboard_screen.dart';
+import 'screens/admin_login_screen.dart';
 import 'screens/booking_screen.dart';
 import 'screens/client_order_screen.dart';
 import 'screens/client_subscription_screen.dart';
@@ -85,7 +86,8 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.clientOrder => _clientOrder(
       settings.arguments! as ClientOrderArgs,
     ),
-    ServickRoutes.adminDashboard => const AdminDashboardScreen(),
+    ServickRoutes.adminLogin => const AdminLoginScreen(),
+    ServickRoutes.adminDashboard => const _AdminEntry(),
     _ => null,
   };
   if (page == null) return null;
@@ -108,6 +110,16 @@ Widget _clientPlans(ClientSubscriptionArgs args) {
     clientId: args.clientId,
     isAdmin: args.isAdmin,
   );
+}
+
+class _AdminEntry extends StatelessWidget {
+  const _AdminEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    if (!AppScope.of(context).adminUnlocked) return const AdminLoginScreen();
+    return const AdminDashboardScreen();
+  }
 }
 
 Widget _clientOrder(ClientOrderArgs args) {
