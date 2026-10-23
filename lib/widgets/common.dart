@@ -26,7 +26,7 @@ class DemoNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Text(
-      'نسخة تجريبية: الطلب يُحفظ داخل التطبيق فقط.',
+      'الطلب والاشتراك يبقيان على هذا الجهاز خلال الجلسة، والدفع محاكاة.',
       textAlign: TextAlign.center,
       style: TextStyle(color: ServickColors.muted, fontSize: 12, height: 1.6),
     );

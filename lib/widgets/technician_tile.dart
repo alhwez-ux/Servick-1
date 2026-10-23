@@ -104,7 +104,9 @@ class TechnicianTile extends StatelessWidget {
                         ),
                         _Meta(label: '$jobs طلب'),
                         _Meta(label: 'خلال ${technician.etaMinutes} د'),
-                        _Meta(label: 'من ${technician.startingPrice} ر.س'),
+                        _Meta(
+                          label: 'من ${model.startingPriceOf(technician)} ر.س',
+                        ),
                       ],
                     ),
                   ],

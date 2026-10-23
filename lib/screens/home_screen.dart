@@ -11,6 +11,7 @@ import '../models/order.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/category_card.dart';
+import '../widgets/desk_inbox.dart';
 import '../widgets/common.dart';
 import '../widgets/servick_scaffold.dart';
 
@@ -32,7 +33,9 @@ class ClientHomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _EmergencyBanner(city: model.city),
-              const SizedBox(height: 22),
+              const SizedBox(height: 16),
+              DeskInbox(audience: 'client', recipientId: demoClientId),
+              const SizedBox(height: 6),
               if (openNow.isNotEmpty) ...[
                 const SectionTitle('متاحون الآن'),
                 const SizedBox(height: 10),

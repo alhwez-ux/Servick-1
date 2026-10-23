@@ -36,30 +36,44 @@ class ServickBrand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('سيرفيسك'),
-        SizedBox(width: 8),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: ServickColors.amber,
-            borderRadius: BorderRadius.all(Radius.circular(8)),
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/brand/servick_mark.png',
+              width: 40,
+              height: 40,
+              filterQuality: FilterQuality.medium,
+              semanticLabel: 'شعار سيرفيسك',
+            ),
           ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            child: Text(
-              'Servick',
-              style: TextStyle(
-                color: ServickColors.navy,
-                fontFamily: 'Cairo',
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
+          const SizedBox(width: 8),
+          const Text('سيرفيسك'),
+          const SizedBox(width: 8),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              color: ServickColors.amber,
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Text(
+                'Servick',
+                style: TextStyle(
+                  color: ServickColors.navy,
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

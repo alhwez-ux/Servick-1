@@ -7,7 +7,9 @@ import 'models/models.dart';
 import 'models/order.dart';
 import 'routes.dart';
 import 'screens/admin_dashboard_screen.dart';
+import 'screens/admin_desk_screen.dart';
 import 'screens/admin_login_screen.dart';
+import 'screens/admin_review_screen.dart';
 import 'screens/booking_screen.dart';
 import 'screens/client_order_screen.dart';
 import 'screens/client_subscription_screen.dart';
@@ -88,6 +90,8 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ),
     ServickRoutes.adminLogin => const AdminLoginScreen(),
     ServickRoutes.adminDashboard => const _AdminEntry(),
+    ServickRoutes.adminReview => const _AdminReviewEntry(),
+    ServickRoutes.adminDesk => const _AdminDeskEntry(),
     _ => null,
   };
   if (page == null) return null;
@@ -119,6 +123,26 @@ class _AdminEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!AppScope.of(context).adminUnlocked) return const AdminLoginScreen();
     return const AdminDashboardScreen();
+  }
+}
+
+class _AdminReviewEntry extends StatelessWidget {
+  const _AdminReviewEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    if (!AppScope.of(context).adminUnlocked) return const AdminLoginScreen();
+    return const AdminReviewScreen();
+  }
+}
+
+class _AdminDeskEntry extends StatelessWidget {
+  const _AdminDeskEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    if (!AppScope.of(context).adminUnlocked) return const AdminLoginScreen();
+    return const AdminDeskScreen();
   }
 }
 

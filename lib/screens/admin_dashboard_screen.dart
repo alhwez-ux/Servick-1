@@ -4,6 +4,7 @@ import '../app_scope.dart';
 import '../data/catalog.dart';
 import '../data/format.dart';
 import '../models/provider.dart';
+import '../routes.dart';
 import '../theme/servick_theme.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -25,17 +26,10 @@ class AdminDashboardScreen extends StatelessWidget {
         actions: [
           IconButton(
             key: const Key('admin-settings'),
-            icon: const Icon(Icons.settings),
+            tooltip: 'اقتراحات التعديل',
+            icon: const Icon(Icons.edit_note),
             onPressed: () {
-              ScaffoldMessenger.of(context)
-                ..clearSnackBars()
-                ..showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'إعدادات النظام العامة غير متاحة في هذه النسخة التجريبية',
-                    ),
-                  ),
-                );
+              Navigator.of(context).pushNamed(ServickRoutes.adminReview);
             },
           ),
         ],
@@ -56,12 +50,30 @@ class AdminDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               const Text(
-                'معاينة المالك داخل الجلسة. Firebase غير مربوط، والتفعيل لا يخصم مبلغاً.',
+                'عاين تفاصيل الحرفيين والطلبات، وافتح الشاشات كما يراها العميل، ثم سجّل ما يحتاج تعديلاً أو إضافة. التفعيل لا يخصم مبلغاً، والبيانات تبقى داخل الجلسة.',
                 style: TextStyle(
                   color: ServickColors.muted,
-                  fontSize: 12,
-                  height: 1.5,
+                  fontSize: 13,
+                  height: 1.6,
                 ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                key: const Key('open-admin-review'),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(ServickRoutes.adminReview);
+                },
+                icon: const Icon(Icons.manage_search),
+                label: const Text('معاينة التفاصيل والاقتراحات'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                key: const Key('open-admin-desk'),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(ServickRoutes.adminDesk);
+                },
+                icon: const Icon(Icons.tune),
+                label: const Text('الأسعار والمراسلات والفوترة'),
               ),
               const SizedBox(height: 16),
               if (wide)

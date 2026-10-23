@@ -90,6 +90,7 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
                 itemBuilder: (context, index) {
                   final plan = availablePlans[index];
                   final isSelected = _selectedPlanId == plan.id;
+                  final price = AppScope.of(context).planPriceOf(plan.id);
                   return Card(
                     margin: const EdgeInsets.only(bottom: 14),
                     elevation: isSelected ? 4 : 1,
@@ -128,7 +129,7 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
                         ),
                       ),
                       trailing: Text(
-                        '${isolateLtr('${plan.priceAmount}')} ريال',
+                        '${isolateLtr('$price')} ريال',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,

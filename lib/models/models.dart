@@ -45,6 +45,20 @@ class CustomerReview {
   final int? stars;
 }
 
+class OwnerSuggestion {
+  const OwnerSuggestion({
+    required this.id,
+    required this.area,
+    required this.text,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String area;
+  final String text;
+  final DateTime createdAt;
+}
+
 class ProviderRating {
   const ProviderRating({
     required this.requestId,

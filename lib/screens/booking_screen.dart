@@ -88,7 +88,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'يبدأ من ${technician.startingPrice} ر.س. السعر النهائي بعد المعاينة.',
+                  'يبدأ من ${AppScope.of(context).startingPriceOf(technician)} ر.س. السعر النهائي بعد المعاينة.',
                   style: const TextStyle(height: 1.5),
                 ),
                 const SizedBox(height: 18),

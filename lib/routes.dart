@@ -14,4 +14,6 @@ abstract final class ServickRoutes {
   static const clientOrder = '/client-order';
   static const adminLogin = '/admin-login';
   static const adminDashboard = '/admin-dashboard';
+  static const adminReview = '/admin-review';
+  static const adminDesk = '/admin-desk';
 }

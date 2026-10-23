@@ -124,7 +124,7 @@ class TechnicianScreen extends StatelessWidget {
                 Expanded(
                   child: _Stat(
                     label: 'يبدأ من',
-                    value: '${technician.startingPrice} ر.س',
+                    value: '${model.startingPriceOf(technician)} ر.س',
                   ),
                 ),
               ],

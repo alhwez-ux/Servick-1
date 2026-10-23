@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
 import '../data/format.dart';
-import '../data/providers.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 
@@ -143,7 +142,7 @@ class _ProviderSubscriptionScreenState
                     ),
                   ),
                   Text(
-                    'سداد تجريبي · ${isolateLtr('$annualSubscriptionFee')} ر.س · لا يُخصم مبلغ حقيقي.',
+                    'سداد تجريبي · ${isolateLtr('${model.providerAnnualFee}')} ر.س · لا يُخصم مبلغ حقيقي.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: ServickColors.muted,
