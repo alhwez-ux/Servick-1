@@ -42,6 +42,14 @@ class AppModel extends ChangeNotifier {
 
   List<ProviderAccount> get providers => List.unmodifiable(_providers);
 
+  int get orderCount => _orders.length;
+
+  List<ProviderAccount> get expiredProviders {
+    return _providers
+        .where((account) => account.subscriptionStatus == 'expired')
+        .toList();
+  }
+
   ProviderAccount? get providerSession => _session;
 
   ClientSubscription? clientSubscription(String clientId) => _clients[clientId];
@@ -209,6 +217,21 @@ class AppModel extends ChangeNotifier {
     _session = renewed;
     notifyListeners();
     return renewed;
+  }
+
+  String? activateProviderSubscription(String providerId) {
+    final index = _providers.indexWhere((account) => account.id == providerId);
+    if (index < 0) return 'الحرفي غير موجود';
+    final activated = _providers[index].copyWith(
+      subscriptionStatus: 'active',
+      subscriptionExpiry: _now().add(
+        const Duration(days: annualSubscriptionDays),
+      ),
+    );
+    _providers[index] = activated;
+    if (_session?.id == providerId) _session = activated;
+    notifyListeners();
+    return null;
   }
 
   List<ServiceRequest> jobsFor(ProviderAccount account) {

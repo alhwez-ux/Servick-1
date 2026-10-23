@@ -6,6 +6,7 @@ import 'models/client_subscription.dart';
 import 'models/models.dart';
 import 'models/order.dart';
 import 'routes.dart';
+import 'screens/admin_dashboard_screen.dart';
 import 'screens/booking_screen.dart';
 import 'screens/client_order_screen.dart';
 import 'screens/client_subscription_screen.dart';
@@ -84,6 +85,7 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.clientOrder => _clientOrder(
       settings.arguments! as ClientOrderArgs,
     ),
+    ServickRoutes.adminDashboard => const AdminDashboardScreen(),
     _ => null,
   };
   if (page == null) return null;
