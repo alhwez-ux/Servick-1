@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
 import '../data/catalog.dart';
+import '../data/client_plans.dart';
 import '../data/format.dart';
 import '../data/matching.dart';
+import '../models/client_subscription.dart';
 import '../models/models.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
@@ -44,6 +46,40 @@ class ClientHomeScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Center(
                 child: TextButton.icon(
+                  key: const Key('open-client-plans'),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      ServickRoutes.clientSubscription,
+                      arguments: const ClientSubscriptionArgs(
+                        clientId: demoClientId,
+                        isAdmin: false,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.card_membership),
+                  label: const Text('باقات اشتراك العملاء'),
+                ),
+              ),
+              Center(
+                child: TextButton(
+                  key: const Key('open-owner-plans'),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      ServickRoutes.clientSubscription,
+                      arguments: const ClientSubscriptionArgs(
+                        clientId: demoClientId,
+                        isAdmin: true,
+                      ),
+                    );
+                  },
+                  child: const Text('معاينة باقة المالك'),
+                ),
+              ),
+              _ClientPlanNote(
+                subscription: model.clientSubscription(demoClientId),
+              ),
+              Center(
+                child: TextButton.icon(
                   key: const Key('open-provider-login'),
                   onPressed: () {
                     Navigator.of(context)
@@ -56,6 +92,30 @@ class ClientHomeScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ClientPlanNote extends StatelessWidget {
+  const _ClientPlanNote({required this.subscription});
+
+  final ClientSubscription? subscription;
+
+  @override
+  Widget build(BuildContext context) {
+    final current = subscription;
+    if (current == null || !current.isActiveAt(AppScope.of(context).now)) {
+      return const SizedBox.shrink();
+    }
+    final plan = clientPlanById(current.planId);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        'باقتك الحالية: ${plan?.title ?? current.planId} حتى ${formatSubscriptionDate(current.expiry)}',
+        key: const Key('client-plan-note'),
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: ServickColors.muted, height: 1.5),
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'data/catalog.dart';
 import 'data/orders.dart';
 import 'data/phone.dart';
 import 'data/providers.dart';
+import 'data/client_plans.dart';
+import 'models/client_subscription.dart';
 import 'models/models.dart';
 import 'models/order.dart';
 import 'models/provider.dart';
@@ -29,6 +31,7 @@ class AppModel extends ChangeNotifier {
   final List<ProviderAccount> _providers;
   final List<ServiceOrder> _orders;
   ProviderAccount? _session;
+  final Map<String, ClientSubscription> _clients = {};
   int _sequence = 1040;
 
   String get city => _city;
@@ -38,6 +41,8 @@ class AppModel extends ChangeNotifier {
   List<ProviderAccount> get providers => List.unmodifiable(_providers);
 
   ProviderAccount? get providerSession => _session;
+
+  ClientSubscription? clientSubscription(String clientId) => _clients[clientId];
 
   ProviderAccount? providerById(String id) {
     for (final account in _providers) {
@@ -213,6 +218,27 @@ class AppModel extends ChangeNotifier {
     requests[index] = request.copyWith(status: RequestStatus.completed);
     notifyListeners();
     return true;
+  }
+
+  String? subscribeClient({
+    required String clientId,
+    required String planId,
+    required int months,
+  }) {
+    if (clientId.trim().isEmpty) return 'معرّف العميل غير معروف';
+    final plan = clientPlanById(planId);
+    if (plan == null || plan.months != months) return 'الباقة غير معروفة';
+    final expiry = months == 0
+        ? _now().add(const Duration(days: 3650))
+        : _now().add(Duration(days: months * 30));
+    _clients[clientId] = ClientSubscription(
+      clientId: clientId,
+      status: 'active',
+      planId: planId,
+      expiry: expiry,
+    );
+    notifyListeners();
+    return null;
   }
 }
 

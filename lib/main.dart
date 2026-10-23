@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_scope.dart';
+import 'models/client_subscription.dart';
 import 'models/models.dart';
 import 'models/order.dart';
 import 'routes.dart';
 import 'screens/booking_screen.dart';
+import 'screens/client_subscription_screen.dart';
 import 'screens/emergency_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
@@ -75,6 +77,9 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.providerOrders => _orders(
       settings.arguments! as ProviderOrdersArgs,
     ),
+    ServickRoutes.clientSubscription => _clientPlans(
+      settings.arguments! as ClientSubscriptionArgs,
+    ),
     _ => null,
   };
   if (page == null) return null;
@@ -89,5 +94,12 @@ Widget _orders(ProviderOrdersArgs args) {
   return ProviderOrdersScreen(
     providerId: args.providerId,
     providerCity: args.providerCity,
+  );
+}
+
+Widget _clientPlans(ClientSubscriptionArgs args) {
+  return ClientSubscriptionScreen(
+    clientId: args.clientId,
+    isAdmin: args.isAdmin,
   );
 }
