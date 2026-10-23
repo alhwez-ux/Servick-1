@@ -98,6 +98,18 @@ class ProviderDashboardScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              key: const Key('open-subscription'),
+              onPressed: () {
+                Navigator.of(context).pushNamed(
+                  ServickRoutes.providerSubscription,
+                  arguments: session.id,
+                );
+              },
+              icon: const Icon(Icons.verified_outlined),
+              label: const Text('إدارة الاشتراك السنوي'),
+            ),
             if (technician != null) ...[
               const SizedBox(height: 16),
               OutlinedButton(

@@ -11,9 +11,9 @@ import 'screens/home_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
 import 'screens/provider_login_screen.dart';
 import 'screens/provider_orders_screen.dart';
+import 'screens/provider_subscription_screen.dart';
 import 'screens/request_details_screen.dart';
 import 'screens/requests_screen.dart';
-import 'screens/subscription_renewal_screen.dart';
 import 'screens/technician_screen.dart';
 import 'screens/technicians_screen.dart';
 import 'theme/servick_theme.dart';
@@ -65,7 +65,10 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.requests => const RequestsScreen(),
     ServickRoutes.request => _details(settings.arguments! as RequestRouteArgs),
     ServickRoutes.providerLogin => const ProviderLoginScreen(),
-    ServickRoutes.providerRenew => SubscriptionRenewalScreen(
+    ServickRoutes.providerRenew => ProviderSubscriptionScreen(
+      providerId: settings.arguments! as String,
+    ),
+    ServickRoutes.providerSubscription => ProviderSubscriptionScreen(
       providerId: settings.arguments! as String,
     ),
     ServickRoutes.providerDashboard => const ProviderDashboardScreen(),

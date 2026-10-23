@@ -183,7 +183,7 @@ void main() {
     expect(model.requests.single.status, RequestStatus.completed);
   });
 
-  testWidgets('expired subscription opens renewal then the dashboard', (
+  testWidgets('expired subscription renews from the subscription screen', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(420, 900);
@@ -200,14 +200,35 @@ void main() {
 
     await tester.tap(find.text('تجديد الاشتراك الآن'));
     await tester.pumpAndSettle();
-    expect(find.text('499 ر.س'), findsOneWidget);
+    expect(find.text('اشتراكك السنوي منتهي أو غير مفعل'), findsOneWidget);
+    expect(find.text('سداد رسوم التجديد وتفعيل الحساب'), findsOneWidget);
+    expect(find.textContaining('2026/10/08'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('pay-subscription')));
+    await tester.tap(find.byKey(const Key('renew-subscription')));
     await tester.pumpAndSettle();
+    expect(find.text('تأكيد تجديد الاشتراك السنوي'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('confirm-payment')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
 
+    expect(
+      find.text('تم تجديد اشتراكك السنوي بنجاح! شكراً لانضمامك لـ Servick'),
+      findsOneWidget,
+    );
+    expect(find.text('حسابك مفعل وجاهز لاستقبال الطلبات'), findsOneWidget);
+    expect(find.textContaining('2027/10/23'), findsOneWidget);
+    expect(model.providerSession?.subscriptionStatus, 'active');
+
+    ScaffoldMessenger.of(
+      tester.element(find.byKey(const Key('renew-subscription'))),
+    ).hideCurrentSnackBar();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const Key('open-dashboard-from-subscription')),
+    );
+    await tester.tap(find.byKey(const Key('open-dashboard-from-subscription')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('provider-dashboard')), findsOneWidget);
     expect(find.text('خالد أحمد عسيري'), findsOneWidget);
-    expect(find.byKey(const Key('provider-empty-jobs')), findsOneWidget);
-    expect(model.providerSession?.subscriptionStatus, 'active');
   });
 }

@@ -76,6 +76,10 @@ void main() {
       '23 أكتوبر · \u202A17:05\u202C',
     );
     expect(formatPhone('0554102213'), '\u202A055 410 2213\u202C');
+    expect(
+      formatSubscriptionDate(DateTime.utc(2026, 10, 23, 21)),
+      '\u202A2026/10/24\u202C',
+    );
   });
 
   test('requests are numbered and newest stays first', () {
