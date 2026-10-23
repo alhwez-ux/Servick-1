@@ -41,6 +41,18 @@ class ClientHomeScreen extends StatelessWidget {
               _CategoryGrid(city: model.city, columns: columns),
               const SizedBox(height: 22),
               const DemoNote(),
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton.icon(
+                  key: const Key('open-provider-login'),
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pushNamed(ServickRoutes.providerLogin);
+                  },
+                  icon: const Icon(Icons.engineering_rounded),
+                  label: const Text('دخول مزودي الخدمات'),
+                ),
+              ),
             ],
           ),
         ),

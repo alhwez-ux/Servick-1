@@ -24,7 +24,7 @@ class RequestDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final technician = findTechnician(request.technicianId);
     final category = categoryById(request.categoryId);
-    final assigned = request.status == RequestStatus.assigned;
+    final assigned = request.status != RequestStatus.waiting;
     final showDetails =
         request.details.trim().isNotEmpty &&
         request.details.trim() != request.summary.trim();

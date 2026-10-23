@@ -1,4 +1,4 @@
-final _separator = RegExp(r'[\s-]');
+final _separator = RegExp(r'[\s-\u200E\u200F\u202A-\u202E]');
 final _saudiMobile = RegExp(r'^(05\d{8}|\+9665\d{8}|9665\d{8})$');
 
 String? validateSaudiMobile(String? raw) {

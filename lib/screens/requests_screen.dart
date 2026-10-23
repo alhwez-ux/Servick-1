@@ -75,9 +75,11 @@ class _RequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final technician = findTechnician(request.technicianId);
-    final statusColor = request.status == RequestStatus.assigned
-        ? ServickColors.success
-        : ServickColors.waiting;
+    final statusColor = switch (request.status) {
+      RequestStatus.assigned => ServickColors.success,
+      RequestStatus.waiting => ServickColors.waiting,
+      RequestStatus.completed => ServickColors.muted,
+    };
     return Material(
       color: Colors.white,
       clipBehavior: Clip.antiAlias,

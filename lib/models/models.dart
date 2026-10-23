@@ -4,7 +4,7 @@ const cities = <String>['خميس مشيط', 'أبها', 'أحد رفيدة'];
 
 enum RequestKind { emergency, booking }
 
-enum RequestStatus { assigned, waiting }
+enum RequestStatus { assigned, waiting, completed }
 
 extension RequestKindLabel on RequestKind {
   String get label => switch (this) {
@@ -17,6 +17,7 @@ extension RequestStatusLabel on RequestStatus {
   String get label => switch (this) {
     RequestStatus.assigned => 'تم التوجيه',
     RequestStatus.waiting => 'بانتظار فني',
+    RequestStatus.completed => 'مكتمل',
   };
 }
 
@@ -117,6 +118,22 @@ class ServiceRequest {
   final String whenLabel;
   final DateTime createdAt;
   final RequestStatus status;
+
+  ServiceRequest copyWith({RequestStatus? status, String? technicianId}) {
+    return ServiceRequest(
+      id: id,
+      kind: kind,
+      categoryId: categoryId,
+      technicianId: technicianId ?? this.technicianId,
+      city: city,
+      summary: summary,
+      details: details,
+      phone: phone,
+      whenLabel: whenLabel,
+      createdAt: createdAt,
+      status: status ?? this.status,
+    );
+  }
 }
 
 class RequestRouteArgs {
