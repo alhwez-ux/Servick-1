@@ -6,6 +6,7 @@ import '../data/providers.dart';
 import '../models/provider.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/servick_scaffold.dart';
 
 class ProviderLoginScreen extends StatefulWidget {
   const ProviderLoginScreen({super.key});
@@ -19,6 +20,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _acceptedPrivacy = false;
 
   @override
   void dispose() {
@@ -39,6 +41,11 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
       _snack('الرجاء إدخال رقم الجوال وكلمة المرور');
       return;
     }
+    if (!_acceptedPrivacy) {
+      _snack('يجب الموافقة على سياسة الخصوصية قبل تسجيل الدخول');
+      return;
+    }
+    AppScope.of(context).acceptPrivacy(audience: 'provider');
 
     setState(() => _isLoading = true);
     final result = AppScope.of(context)
@@ -48,7 +55,6 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
 
     switch (result) {
       case ProviderLoginSuccess():
-        _snack('تم تسجيل الدخول بنجاح أهلاً بك في Servick');
         Navigator.of(context).pushNamedAndRemoveUntil(
           ServickRoutes.providerDashboard,
           (route) => route.isFirst,
@@ -106,39 +112,40 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final model = AppScope.of(context);
-    return Scaffold(
-      appBar: AppBar(title: const Text('دخول مزودي الخدمات | Servick')),
+    return ServickScaffold(
+      title: 'دخول مزودي الخدمات',
+      showCity: false,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 460),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Icon(
                     Icons.engineering_rounded,
-                    size: 80,
+                    size: 40,
                     color: ServickColors.navy,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   const Text(
                     'بوابة الحرفيين والورش',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   const Text(
                     'أدخل بياناتك لاستقبال طلبات الصيانة في خميس مشيط، أبها، وأحد رفيدة',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
                       color: ServickColors.muted,
-                      height: 1.5,
+                      height: 1.45,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 16),
                   TextField(
                     key: const Key('provider-phone'),
                     controller: _phoneController,
@@ -173,7 +180,53 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 4),
+                  InkWell(
+                    key: const Key('provider-privacy'),
+                    onTap: _isLoading
+                        ? null
+                        : () {
+                            setState(
+                              () => _acceptedPrivacy = !_acceptedPrivacy,
+                            );
+                          },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Checkbox(
+                          value: _acceptedPrivacy,
+                          onChanged: _isLoading
+                              ? null
+                              : (value) {
+                                  setState(
+                                    () => _acceptedPrivacy = value ?? false,
+                                  );
+                                },
+                        ),
+                        const Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 12),
+                            child: Text(
+                              'أوافق على سياسة الخصوصية. المنصة للربط فقط، والتحقق من الحرفي بالهاتف مسؤولية العميل.',
+                              style: TextStyle(fontSize: 13, height: 1.4),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      key: const Key('open-provider-privacy'),
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(ServickRoutes.privacy);
+                      },
+                      child: const Text('قراءة سياسة الخصوصية'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   SizedBox(
                     height: 52,
                     child: FilledButton(

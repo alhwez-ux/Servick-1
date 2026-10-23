@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'data/admin.dart';
 import 'data/catalog.dart';
@@ -52,7 +52,11 @@ class AppModel extends ChangeNotifier {
   int _clientOrderSequence = 0;
   int _suggestionSequence = 0;
   int _messageSequence = 0;
+  int _serviceSequence = 0;
   bool _adminUnlocked = false;
+  bool _clientPrivacyAccepted = false;
+  bool _providerPrivacyAccepted = false;
+  final List<ServiceCategory> _extraCategories = [];
 
   String get city => _city;
 
@@ -141,6 +145,73 @@ class AppModel extends ChangeNotifier {
   ProviderAccount? get providerSession => _session;
 
   bool get adminUnlocked => _adminUnlocked;
+
+  bool get clientPrivacyAccepted => _clientPrivacyAccepted;
+
+  bool get providerPrivacyAccepted => _providerPrivacyAccepted;
+
+  List<ServiceCategory> get serviceCategories => [
+    ...categories,
+    ..._extraCategories,
+  ];
+
+  List<ServiceCategory> get addedServices =>
+      List.unmodifiable(_extraCategories);
+
+  ServiceCategory? categoryOf(String id) {
+    for (final category in serviceCategories) {
+      if (category.id == id) return category;
+    }
+    return null;
+  }
+
+  void acceptPrivacy({required String audience}) {
+    if (audience == 'provider') {
+      _providerPrivacyAccepted = true;
+    } else {
+      _clientPrivacyAccepted = true;
+    }
+    notifyListeners();
+  }
+
+  String? addService({required String title, required String subtitle}) {
+    final cleanTitle = title.trim();
+    if (cleanTitle.isEmpty) return 'اكتب اسم الخدمة';
+    if (cleanTitle.length > 40) return 'اسم الخدمة أطول من أربعين حرفاً';
+    final duplicate = serviceCategories.any(
+      (category) => category.title == cleanTitle,
+    );
+    if (duplicate) return 'هذه الخدمة موجودة';
+    final cleanSubtitle = subtitle.trim().isEmpty
+        ? 'خدمة أضافها المالك خلال الجلسة'
+        : subtitle.trim();
+    if (cleanSubtitle.length > 80) return 'الوصف أطول من ثمانين حرفاً';
+    _serviceSequence += 1;
+    const colors = <Color>[
+      Color(0xFF1E3A8A),
+      Color(0xFF0F766E),
+      Color(0xFFB45309),
+      Color(0xFF7C3AED),
+    ];
+    const icons = <IconData>[
+      Icons.home_repair_service,
+      Icons.handyman,
+      Icons.build_circle,
+      Icons.plumbing,
+    ];
+    final slot = (_serviceSequence - 1) % colors.length;
+    _extraCategories.add(
+      ServiceCategory(
+        id: 'custom-$_serviceSequence',
+        title: cleanTitle,
+        subtitle: cleanSubtitle,
+        icon: icons[slot],
+        color: colors[slot],
+      ),
+    );
+    notifyListeners();
+    return null;
+  }
 
   void unlockAdmin() {
     if (_adminUnlocked) return;

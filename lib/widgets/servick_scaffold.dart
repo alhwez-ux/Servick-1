@@ -149,6 +149,111 @@ class CityPickerBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
+class ServickBottomNav extends StatelessWidget {
+  const ServickBottomNav({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = ModalRoute.of(context)?.settings.name;
+    return Material(
+      color: Colors.white,
+      elevation: 8,
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 62,
+          child: Row(
+            children: [
+              _NavItem(
+                itemKey: const Key('nav-home'),
+                icon: Icons.home_outlined,
+                label: 'الرئيسية',
+                selected: name == null,
+                onTap: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+              ),
+              _NavItem(
+                itemKey: const Key('nav-requests'),
+                icon: Icons.receipt_long_outlined,
+                label: 'طلباتي',
+                selected: name == ServickRoutes.requests,
+                onTap: () => _open(context, ServickRoutes.requests),
+              ),
+              _NavItem(
+                itemKey: const Key('nav-provider'),
+                icon: Icons.engineering_outlined,
+                label: 'الحرفي',
+                selected: name == ServickRoutes.providerLogin,
+                onTap: () => _open(context, ServickRoutes.providerLogin),
+              ),
+              _NavItem(
+                itemKey: const Key('nav-privacy'),
+                icon: Icons.privacy_tip_outlined,
+                label: 'الخصوصية',
+                selected: name == ServickRoutes.privacy,
+                onTap: () => _open(context, ServickRoutes.privacy),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _open(BuildContext context, String route) {
+    if (ModalRoute.of(context)?.settings.name == route) return;
+    Navigator.of(context).pushNamed(route);
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.itemKey,
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Key itemKey;
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? ServickColors.navy : ServickColors.muted;
+    return Expanded(
+      child: InkWell(
+        key: itemKey,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 22, color: color),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ServickScaffold extends StatelessWidget {
   const ServickScaffold({
     super.key,
@@ -172,7 +277,9 @@ class ServickScaffold extends StatelessWidget {
     final count = AppScope.of(context).requests.length;
     return Scaffold(
       appBar: AppBar(
-        title: brand ? const ServickBrand() : Text(title!),
+        title: brand
+            ? const ServickBrand()
+            : Text(title!, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
           if (showRequests)
             IconButton(
@@ -191,8 +298,8 @@ class ServickScaffold extends StatelessWidget {
         ],
         bottom: showCity ? const CityPickerBar() : null,
       ),
-      body: body,
-      bottomNavigationBar: bottom,
+      body: SafeArea(top: false, bottom: false, child: body),
+      bottomNavigationBar: bottom ?? const ServickBottomNav(),
     );
   }
 }

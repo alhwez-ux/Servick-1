@@ -4,6 +4,7 @@ import '../app_scope.dart';
 import '../data/client_plans.dart';
 import '../data/format.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/privacy_gate.dart';
 
 class ClientSubscriptionScreen extends StatefulWidget {
   const ClientSubscriptionScreen({
@@ -23,7 +24,9 @@ class ClientSubscriptionScreen extends StatefulWidget {
 class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
   String? _selectedPlanId;
 
-  void _subscribeClient(ClientPlan plan) {
+  Future<void> _subscribeClient(ClientPlan plan) async {
+    final allowed = await requireClientPrivacy(context);
+    if (!allowed || !mounted) return;
     final error = AppScope.of(context).subscribeClient(
       clientId: widget.clientId,
       planId: plan.id,
@@ -104,39 +107,61 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
                         width: isSelected ? 2 : 1,
                       ),
                     ),
-                    child: ListTile(
+                    child: InkWell(
                       key: Key('plan-${plan.id}'),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      leading: CircleAvatar(
-                        backgroundColor: plan.color.withValues(alpha: 0.12),
-                        child: Icon(Icons.star, color: plan.color),
-                      ),
-                      title: Text(
-                        plan.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'المدة: ${plan.duration}',
-                        style: const TextStyle(
-                          color: ServickColors.muted,
-                          fontSize: 13,
-                        ),
-                      ),
-                      trailing: Text(
-                        '${isolateLtr('$price')} ريال',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                          color: plan.color,
-                        ),
-                      ),
                       onTap: () => setState(() => _selectedPlanId = plan.id),
+                      borderRadius: BorderRadius.circular(14),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: plan.color.withValues(
+                                alpha: 0.12,
+                              ),
+                              child: Icon(Icons.star, color: plan.color),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    plan.title,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'المدة: ${plan.duration}',
+                                    style: const TextStyle(
+                                      color: ServickColors.muted,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '${isolateLtr('$price')} ريال',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      color: plan.color,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 },

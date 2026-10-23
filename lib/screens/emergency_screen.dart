@@ -9,6 +9,7 @@ import '../models/models.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/common.dart';
+import '../widgets/privacy_gate.dart';
 import '../widgets/hood_open_scene.dart';
 import '../widgets/copy_phone.dart';
 import '../widgets/provider_rating_panel.dart';
@@ -39,11 +40,13 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final issueOk = _issueId != null;
     final formOk = _formKey.currentState?.validate() ?? false;
     setState(() => _issueError = issueOk ? null : 'اختر نوع العطل');
     if (!issueOk || !formOk) return;
+    final allowed = await requireClientPrivacy(context);
+    if (!allowed || !mounted) return;
 
     final model = AppScope.of(context);
     final issue = issueById(_issueId!);
@@ -120,7 +123,7 @@ class _EmergencyForm extends StatelessWidget {
   final String? issueId;
   final String? issueError;
   final ValueChanged<String> onSelectIssue;
-  final VoidCallback onSubmit;
+  final Future<void> Function() onSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +242,9 @@ class _EmergencyForm extends StatelessWidget {
                 backgroundColor: ServickColors.emergency,
                 foregroundColor: Colors.white,
               ),
-              onPressed: onSubmit,
+              onPressed: () {
+                onSubmit();
+              },
               child: const Text('إرسال طلب الطوارئ'),
             ),
           ],

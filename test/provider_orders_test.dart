@@ -22,6 +22,10 @@ Future<void> _openNearby(WidgetTester tester) async {
     find.byKey(const Key('provider-password')),
     demoProviderPassword,
   );
+  await tester.ensureVisible(find.byKey(const Key('provider-privacy')));
+  await tester.tap(find.byKey(const Key('provider-privacy')));
+  await tester.pump();
+  await tester.ensureVisible(find.byKey(const Key('provider-login')));
   await tester.tap(find.byKey(const Key('provider-login')));
   await tester.pumpAndSettle();
   await tester.ensureVisible(find.byKey(const Key('open-nearby-orders')));

@@ -96,6 +96,12 @@ void main() {
     await tester.ensureVisible(find.byKey(const Key('send-emergency')));
     await tester.tap(find.byKey(const Key('send-emergency')));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('privacy-checkbox')));
+    await tester.tap(find.byKey(const Key('privacy-checkbox')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('accept-privacy')));
+    await tester.tap(find.byKey(const Key('accept-privacy')));
+    await tester.pumpAndSettle();
 
     expect(find.text('قيّم مقدم الخدمة'), findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('submit-rating')));

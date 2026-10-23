@@ -10,6 +10,7 @@ import 'screens/admin_dashboard_screen.dart';
 import 'screens/admin_desk_screen.dart';
 import 'screens/admin_login_screen.dart';
 import 'screens/admin_review_screen.dart';
+import 'screens/admin_service_screen.dart';
 import 'screens/booking_screen.dart';
 import 'screens/client_order_screen.dart';
 import 'screens/client_subscription_screen.dart';
@@ -18,6 +19,7 @@ import 'screens/home_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
 import 'screens/provider_login_screen.dart';
 import 'screens/provider_orders_screen.dart';
+import 'screens/privacy_policy_screen.dart';
 import 'screens/provider_subscription_screen.dart';
 import 'screens/request_details_screen.dart';
 import 'screens/requests_screen.dart';
@@ -92,10 +94,34 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.adminDashboard => const _AdminEntry(),
     ServickRoutes.adminReview => const _AdminReviewEntry(),
     ServickRoutes.adminDesk => const _AdminDeskEntry(),
+    ServickRoutes.adminService => const _AdminServiceEntry(),
+    ServickRoutes.privacy => const PrivacyPolicyScreen(),
     _ => null,
   };
   if (page == null) return null;
-  return MaterialPageRoute<void>(settings: settings, builder: (_) => page);
+  return PageRouteBuilder<void>(
+    settings: settings,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.03),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
 }
 
 Widget _details(RequestRouteArgs args) {
@@ -143,6 +169,16 @@ class _AdminDeskEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!AppScope.of(context).adminUnlocked) return const AdminLoginScreen();
     return const AdminDeskScreen();
+  }
+}
+
+class _AdminServiceEntry extends StatelessWidget {
+  const _AdminServiceEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    if (!AppScope.of(context).adminUnlocked) return const AdminLoginScreen();
+    return const AdminServiceScreen();
   }
 }
 

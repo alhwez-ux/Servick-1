@@ -112,6 +112,12 @@ void main() {
       );
       await tester.ensureVisible(find.byKey(const Key('submit-client-order')));
       await tester.tap(find.byKey(const Key('submit-client-order')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('privacy-checkbox')));
+      await tester.tap(find.byKey(const Key('privacy-checkbox')));
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const Key('accept-privacy')));
+      await tester.tap(find.byKey(const Key('accept-privacy')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
@@ -144,6 +150,10 @@ void main() {
         find.byKey(const Key('provider-password')),
         demoProviderPassword,
       );
+      await tester.ensureVisible(find.byKey(const Key('provider-privacy')));
+      await tester.tap(find.byKey(const Key('provider-privacy')));
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const Key('provider-login')));
       await tester.tap(find.byKey(const Key('provider-login')));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byKey(const Key('open-nearby-orders')));

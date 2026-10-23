@@ -152,21 +152,23 @@ class _ProviderSubscriptionScreenState
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
-                    height: 52,
-                    child: FilledButton.icon(
+                    width: double.infinity,
+                    child: FilledButton(
                       key: const Key('renew-subscription'),
                       onPressed: _renewSubscription,
                       style: FilledButton.styleFrom(
                         backgroundColor: ServickColors.navy,
+                        minimumSize: const Size.fromHeight(52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      icon: const Icon(Icons.payment, color: Colors.white),
-                      label: Text(
+                      child: Text(
                         isActive
                             ? 'تجديد الاشتراك لمدة سنة إضافية'
                             : 'سداد رسوم التجديد وتفعيل الحساب',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 15,

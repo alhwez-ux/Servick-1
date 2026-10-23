@@ -4,6 +4,7 @@ import '../app_scope.dart';
 import '../data/order_categories.dart';
 import '../models/models.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/privacy_gate.dart';
 
 class ClientOrderScreen extends StatefulWidget {
   const ClientOrderScreen({
@@ -41,6 +42,8 @@ class _ClientOrderScreenState extends State<ClientOrderScreen> {
       _snack('الرجاء اختيار نوع الخدمة المطلوبة أولاً');
       return;
     }
+    final allowed = await requireClientPrivacy(context);
+    if (!allowed || !mounted) return;
 
     setState(() => _isLoading = true);
     final error = AppScope.of(context).submitClientOrder(
@@ -180,7 +183,11 @@ class _ClientOrderScreenState extends State<ClientOrderScreen> {
                 height: 52,
                 child: FilledButton(
                   key: const Key('submit-client-order'),
-                  onPressed: _isLoading ? null : _submitOrder,
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          _submitOrder();
+                        },
                   child: _isLoading
                       ? const SizedBox(
                           width: 22,

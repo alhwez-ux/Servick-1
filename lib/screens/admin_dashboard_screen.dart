@@ -58,22 +58,34 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              FilledButton.icon(
-                key: const Key('open-admin-review'),
+              _DashButton(
+                buttonKey: const Key('open-admin-review'),
+                icon: Icons.manage_search,
+                label: 'معاينة التفاصيل والاقتراحات',
+                filled: true,
                 onPressed: () {
                   Navigator.of(context).pushNamed(ServickRoutes.adminReview);
                 },
-                icon: const Icon(Icons.manage_search),
-                label: const Text('معاينة التفاصيل والاقتراحات'),
               ),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
-                key: const Key('open-admin-desk'),
+              _DashButton(
+                buttonKey: const Key('open-admin-desk'),
+                icon: Icons.tune,
+                label: 'الأسعار والمراسلات والفوترة',
                 onPressed: () {
                   Navigator.of(context).pushNamed(ServickRoutes.adminDesk);
                 },
-                icon: const Icon(Icons.tune),
-                label: const Text('الأسعار والمراسلات والفوترة'),
+              ),
+              const SizedBox(height: 8),
+              _DashButton(
+                buttonKey: const Key('open-add-service'),
+                icon: Icons.add_circle_outline,
+                label: 'إضافة خدمة جديدة',
+                filled: true,
+                amber: true,
+                onPressed: () {
+                  Navigator.of(context).pushNamed(ServickRoutes.adminService);
+                },
               ),
               const SizedBox(height: 16),
               if (wide)
@@ -140,6 +152,68 @@ class AdminDashboardScreen extends StatelessWidget {
       icon: Icons.car_repair,
       color: const Color(0xFF10B981),
     );
+  }
+}
+
+class _DashButton extends StatelessWidget {
+  const _DashButton({
+    required this.buttonKey,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.filled = false,
+    this.amber = false,
+  });
+
+  final Key buttonKey;
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool filled;
+  final bool amber;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    );
+    final button = !filled
+        ? OutlinedButton(
+            key: buttonKey,
+            onPressed: onPressed,
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+              shape: shape,
+            ),
+            child: child,
+          )
+        : FilledButton(
+            key: buttonKey,
+            onPressed: onPressed,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+              backgroundColor: amber ? ServickColors.amber : ServickColors.navy,
+              foregroundColor: amber ? ServickColors.navy : Colors.white,
+              shape: shape,
+            ),
+            child: child,
+          );
+    return SizedBox(width: double.infinity, child: button);
   }
 }
 

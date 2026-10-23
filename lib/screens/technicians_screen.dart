@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
-import '../data/catalog.dart';
 import '../data/matching.dart';
 import '../models/models.dart';
 import '../theme/servick_theme.dart';
@@ -23,7 +22,13 @@ class _TechniciansScreenState extends State<TechniciansScreen> {
   @override
   Widget build(BuildContext context) {
     final model = AppScope.of(context);
-    final category = categoryById(widget.categoryId);
+    final category = model.categoryOf(widget.categoryId);
+    if (category == null) {
+      return const ServickScaffold(
+        title: 'الخدمة',
+        body: Center(child: Text('هذه الخدمة غير موجودة في الجلسة.')),
+      );
+    }
     final people = techniciansFor(
       categoryId: category.id,
       city: model.city,

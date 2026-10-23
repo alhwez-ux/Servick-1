@@ -51,9 +51,24 @@ class ClientHomeScreen extends StatelessWidget {
               ],
               const SectionTitle('اختر نوع الخدمة المطلوبة:'),
               const SizedBox(height: 12),
-              _CategoryGrid(city: model.city, columns: columns),
+              _CategoryGrid(
+                city: model.city,
+                columns: columns,
+                categories: model.serviceCategories,
+              ),
               const SizedBox(height: 22),
               const DemoNote(),
+              const SizedBox(height: 4),
+              Center(
+                child: TextButton.icon(
+                  key: const Key('open-privacy'),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(ServickRoutes.privacy);
+                  },
+                  icon: const Icon(Icons.privacy_tip_outlined),
+                  label: const Text('سياسة الخصوصية'),
+                ),
+              ),
               const SizedBox(height: 8),
               Center(
                 child: FilledButton.icon(
@@ -160,35 +175,39 @@ class _ClientPlanNote extends StatelessWidget {
 }
 
 class _CategoryGrid extends StatelessWidget {
-  const _CategoryGrid({required this.city, required this.columns});
+  const _CategoryGrid({
+    required this.city,
+    required this.columns,
+    required this.categories,
+  });
 
   final String city;
   final int columns;
+  final List<ServiceCategory> categories;
 
   @override
   Widget build(BuildContext context) {
     final rows = <Widget>[];
     for (var index = 0; index < categories.length; index += columns) {
       rows.add(
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var column = 0; column < columns; column++) ...[
-              if (column > 0) const SizedBox(width: 14),
-              Expanded(
-                child: index + column < categories.length
-                    ? SizedBox(
-                        height: 184,
-                        child: CategoryCard(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var column = 0; column < columns; column++) ...[
+                if (column > 0) const SizedBox(width: 14),
+                Expanded(
+                  child: index + column < categories.length
+                      ? CategoryCard(
                           key: Key('category-${categories[index + column].id}'),
                           category: categories[index + column],
                           city: city,
-                        ),
-                      )
-                    : const SizedBox(height: 184),
-              ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       );
       if (index + columns < categories.length) {

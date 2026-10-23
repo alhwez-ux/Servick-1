@@ -21,6 +21,11 @@ Future<void> _openPortal(WidgetTester tester, AppModel model) async {
 Future<void> _signIn(WidgetTester tester, String phone, String password) async {
   await tester.enterText(find.byKey(const Key('provider-phone')), phone);
   await tester.enterText(find.byKey(const Key('provider-password')), password);
+  await tester.ensureVisible(find.byKey(const Key('provider-privacy')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const Key('provider-privacy')));
+  await tester.pump();
+  await tester.ensureVisible(find.byKey(const Key('provider-login')));
   await tester.tap(find.byKey(const Key('provider-login')));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 400));
@@ -142,6 +147,7 @@ void main() {
 
   testWidgets('empty fields stay on the login screen', (tester) async {
     await _openPortal(tester, _model());
+    await tester.ensureVisible(find.byKey(const Key('provider-login')));
     await tester.tap(find.byKey(const Key('provider-login')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
@@ -165,7 +171,7 @@ void main() {
     await _openPortal(tester, model);
     await tester.ensureVisible(find.byKey(const Key('demo-prov-p-km-1')));
     await tester.tap(find.byKey(const Key('demo-prov-p-km-1')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     await _signIn(tester, '0554102201', demoProviderPassword);
 
     expect(find.byKey(const Key('provider-dashboard')), findsOneWidget);

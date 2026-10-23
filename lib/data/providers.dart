@@ -1,6 +1,6 @@
 import '../models/provider.dart';
 
-const annualSubscriptionFee = 499;
+const annualSubscriptionFee = 100;
 const annualSubscriptionDays = 365;
 const demoProviderPassword = '123456';
 

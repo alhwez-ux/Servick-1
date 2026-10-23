@@ -6,6 +6,7 @@ import '../data/phone.dart';
 import '../models/models.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/privacy_gate.dart';
 import '../widgets/servick_scaffold.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -32,8 +33,10 @@ class _BookingScreenState extends State<BookingScreen> {
     super.dispose();
   }
 
-  void _submit(Technician technician) {
+  Future<void> _submit(Technician technician) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final allowed = await requireClientPrivacy(context);
+    if (!allowed || !mounted) return;
     final request = AppScope.of(context).submit(
       kind: RequestKind.booking,
       categoryId: technician.categoryId,
@@ -153,7 +156,9 @@ class _BookingScreenState extends State<BookingScreen> {
                 const SizedBox(height: 18),
                 FilledButton(
                   key: const Key('send-booking'),
-                  onPressed: () => _submit(technician),
+                  onPressed: () {
+                    _submit(technician);
+                  },
                   child: const Text('تأكيد الطلب'),
                 ),
               ],

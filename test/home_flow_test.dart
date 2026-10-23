@@ -83,6 +83,12 @@ void main() {
     await tester.ensureVisible(find.byKey(const Key('send-emergency')));
     await tester.tap(find.byKey(const Key('send-emergency')));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('privacy-checkbox')));
+    await tester.tap(find.byKey(const Key('privacy-checkbox')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('accept-privacy')));
+    await tester.tap(find.byKey(const Key('accept-privacy')));
+    await tester.pumpAndSettle();
 
     expect(find.text('SV-1041'), findsOneWidget);
     expect(find.text('بدر محمد الشهري'), findsOneWidget);
@@ -124,6 +130,12 @@ void main() {
     );
     await tester.ensureVisible(find.byKey(const Key('send-booking')));
     await tester.tap(find.byKey(const Key('send-booking')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('privacy-checkbox')));
+    await tester.tap(find.byKey(const Key('privacy-checkbox')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('accept-privacy')));
+    await tester.tap(find.byKey(const Key('accept-privacy')));
     await tester.pumpAndSettle();
 
     expect(find.text('تم إرسال طلبك'), findsOneWidget);

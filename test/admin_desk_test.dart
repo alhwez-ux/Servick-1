@@ -65,8 +65,9 @@ void main() {
           providerFeeRaw: '550',
           planPriceRaws: const {
             'monthly': '35',
-            'semi_annual': '149',
-            'annual': '249',
+            'quarterly': '40',
+            'semi_annual': '70',
+            'annual': '120',
           },
           prefix: 'SV',
           nextNumberRaw: '1041',

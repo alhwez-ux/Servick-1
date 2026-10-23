@@ -11,8 +11,15 @@ void main() {
 
     expect(plansFor(isAdmin: false).map((plan) => plan.id), [
       'monthly',
+      'quarterly',
       'semi_annual',
       'annual',
+    ]);
+    expect(plansFor(isAdmin: false).map((plan) => plan.priceAmount), [
+      20,
+      40,
+      70,
+      120,
     ]);
     expect(plansFor(isAdmin: true).first.id, 'free_admin');
 
@@ -79,6 +86,7 @@ void main() {
     expect(find.text('باقات اشتراك العملاء | Servick'), findsOneWidget);
     expect(find.text('باقة المالك الخاصة'), findsNothing);
     expect(find.text('الاشتراك الشهري'), findsOneWidget);
+    expect(find.text('اشتراك 3 أشهر'), findsOneWidget);
     expect(find.text('اشتراك 6 أشهر'), findsOneWidget);
     expect(find.text('اشتراك 12 شهراً'), findsOneWidget);
 
@@ -91,6 +99,12 @@ void main() {
     await tester.pump();
     await tester.ensureVisible(find.byKey(const Key('confirm-client-plan')));
     await tester.tap(find.byKey(const Key('confirm-client-plan')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('privacy-checkbox')));
+    await tester.tap(find.byKey(const Key('privacy-checkbox')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('accept-privacy')));
+    await tester.tap(find.byKey(const Key('accept-privacy')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 800));
 
@@ -127,6 +141,12 @@ void main() {
     await tester.pump();
     await tester.ensureVisible(find.byKey(const Key('confirm-client-plan')));
     await tester.tap(find.byKey(const Key('confirm-client-plan')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('privacy-checkbox')));
+    await tester.tap(find.byKey(const Key('privacy-checkbox')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('accept-privacy')));
+    await tester.tap(find.byKey(const Key('accept-privacy')));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('باقة المالك الخاصة'), findsOneWidget);
