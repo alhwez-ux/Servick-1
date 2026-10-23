@@ -13,6 +13,7 @@ import '../theme/servick_theme.dart';
 import '../widgets/category_card.dart';
 import '../widgets/desk_inbox.dart';
 import '../widgets/common.dart';
+import '../widgets/hood_open_scene.dart';
 import '../widgets/servick_scaffold.dart';
 
 class ClientHomeScreen extends StatelessWidget {
@@ -32,6 +33,12 @@ class ClientHomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              HoodOpenScene(
+                onTap: () {
+                  Navigator.of(context).pushNamed(ServickRoutes.emergency);
+                },
+              ),
+              const SizedBox(height: 12),
               _EmergencyBanner(city: model.city),
               const SizedBox(height: 16),
               DeskInbox(audience: 'client', recipientId: demoClientId),

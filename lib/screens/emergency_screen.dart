@@ -9,6 +9,7 @@ import '../models/models.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/common.dart';
+import '../widgets/hood_open_scene.dart';
 import '../widgets/copy_phone.dart';
 import '../widgets/provider_rating_panel.dart';
 import '../widgets/servick_scaffold.dart';
@@ -130,6 +131,8 @@ class _EmergencyForm extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const HoodOpenScene(),
+            const SizedBox(height: 12),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(

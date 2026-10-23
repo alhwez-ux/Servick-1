@@ -67,8 +67,10 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
+    await tester.ensureVisible(find.byKey(const Key('open-emergency')));
     await tester.tap(find.byKey(const Key('open-emergency')));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('بطارية'));
     await tester.tap(find.text('بطارية'));
     await tester.enterText(
       find.byKey(const Key('emergency-place')),
@@ -89,6 +91,7 @@ void main() {
 
   testWidgets('emergency form asks for the missing fields', (tester) async {
     await _pumpApp(tester);
+    await tester.ensureVisible(find.byKey(const Key('open-emergency')));
     await tester.tap(find.byKey(const Key('open-emergency')));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('send-emergency')));
