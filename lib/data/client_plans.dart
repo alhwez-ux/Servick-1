@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const demoClientId = 'client-demo';
+const demoClientName = 'عميل Servick';
 
 class ClientPlan {
   const ClientPlan({

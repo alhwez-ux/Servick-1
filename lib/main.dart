@@ -7,6 +7,7 @@ import 'models/models.dart';
 import 'models/order.dart';
 import 'routes.dart';
 import 'screens/booking_screen.dart';
+import 'screens/client_order_screen.dart';
 import 'screens/client_subscription_screen.dart';
 import 'screens/emergency_screen.dart';
 import 'screens/home_screen.dart';
@@ -80,6 +81,9 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.clientSubscription => _clientPlans(
       settings.arguments! as ClientSubscriptionArgs,
     ),
+    ServickRoutes.clientOrder => _clientOrder(
+      settings.arguments! as ClientOrderArgs,
+    ),
     _ => null,
   };
   if (page == null) return null;
@@ -101,5 +105,12 @@ Widget _clientPlans(ClientSubscriptionArgs args) {
   return ClientSubscriptionScreen(
     clientId: args.clientId,
     isAdmin: args.isAdmin,
+  );
+}
+
+Widget _clientOrder(ClientOrderArgs args) {
+  return ClientOrderScreen(
+    clientId: args.clientId,
+    clientName: args.clientName,
   );
 }

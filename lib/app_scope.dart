@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'data/catalog.dart';
 import 'data/orders.dart';
+import 'data/order_categories.dart';
 import 'data/phone.dart';
 import 'data/providers.dart';
 import 'data/client_plans.dart';
@@ -33,6 +34,7 @@ class AppModel extends ChangeNotifier {
   ProviderAccount? _session;
   final Map<String, ClientSubscription> _clients = {};
   int _sequence = 1040;
+  int _clientOrderSequence = 0;
 
   String get city => _city;
 
@@ -105,6 +107,39 @@ class AppModel extends ChangeNotifier {
     }
     notifyListeners();
     return request;
+  }
+
+  String? submitClientOrder({
+    required String clientId,
+    required String clientName,
+    required String categoryId,
+    required String city,
+    required String notes,
+  }) {
+    if (!cities.contains(city)) return 'المدينة غير معروفة';
+    final category = orderCategoryById(categoryId);
+    if (category == null) return 'نوع الخدمة غير معروف';
+    if (clientId.trim().isEmpty || clientName.trim().isEmpty) {
+      return 'بيانات العميل غير مكتملة';
+    }
+    final trimmed = notes.trim().isEmpty ? 'بدون ملاحظات إضافية' : notes.trim();
+    _clientOrderSequence += 1;
+    _orders.insert(
+      0,
+      ServiceOrder(
+        id: 'ord-c-$_clientOrderSequence',
+        clientId: clientId.trim(),
+        clientName: clientName.trim(),
+        categoryId: category.id,
+        serviceTitle: category.title,
+        notes: trimmed,
+        city: city,
+        createdAt: _now(),
+        status: 'pending',
+      ),
+    );
+    notifyListeners();
+    return null;
   }
 
   List<ServiceOrder> pendingOrdersIn(String city) {

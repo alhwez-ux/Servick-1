@@ -7,6 +7,7 @@ import '../data/format.dart';
 import '../data/matching.dart';
 import '../models/client_subscription.dart';
 import '../models/models.dart';
+import '../models/order.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/category_card.dart';
@@ -44,6 +45,23 @@ class ClientHomeScreen extends StatelessWidget {
               const SizedBox(height: 22),
               const DemoNote(),
               const SizedBox(height: 8),
+              Center(
+                child: FilledButton.icon(
+                  key: const Key('open-client-order'),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      ServickRoutes.clientOrder,
+                      arguments: const ClientOrderArgs(
+                        clientId: demoClientId,
+                        clientName: demoClientName,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.home_repair_service_outlined),
+                  label: const Text('طلب خدمة صيانة عاجلة'),
+                ),
+              ),
+              const SizedBox(height: 4),
               Center(
                 child: TextButton.icon(
                   key: const Key('open-client-plans'),

@@ -7,11 +7,15 @@ class ServiceOrder {
     required this.city,
     required this.createdAt,
     required this.status,
+    this.clientId,
+    this.categoryId,
     this.providerId,
     this.requestId,
   });
 
   final String id;
+  final String? clientId;
+  final String? categoryId;
   final String clientName;
   final String serviceTitle;
   final String notes;
@@ -32,6 +36,8 @@ class ServiceOrder {
       city: city,
       createdAt: createdAt,
       status: status ?? this.status,
+      clientId: clientId,
+      categoryId: categoryId,
       providerId: providerId ?? this.providerId,
       requestId: requestId,
     );
@@ -46,4 +52,11 @@ class ProviderOrdersArgs {
 
   final String providerId;
   final String providerCity;
+}
+
+class ClientOrderArgs {
+  const ClientOrderArgs({required this.clientId, required this.clientName});
+
+  final String clientId;
+  final String clientName;
 }
