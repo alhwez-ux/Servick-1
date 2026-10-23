@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app_scope.dart';
 import '../data/catalog.dart';
 import '../data/format.dart';
 import '../models/models.dart';
@@ -19,7 +20,10 @@ class TechnicianTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = AppScope.of(context);
     final category = categoryById(technician.categoryId);
+    final rating = model.displayRating(technician);
+    final jobs = model.displayJobs(technician);
     return Material(
       color: Colors.white,
       clipBehavior: Clip.antiAlias,
@@ -95,10 +99,10 @@ class TechnicianTile extends StatelessWidget {
                       children: [
                         _Meta(
                           icon: Icons.star_rounded,
-                          label: technician.rating.toStringAsFixed(1),
+                          label: rating.toStringAsFixed(1),
                           color: ServickColors.amber,
                         ),
-                        _Meta(label: '${technician.jobs} طلب'),
+                        _Meta(label: '$jobs طلب'),
                         _Meta(label: 'خلال ${technician.etaMinutes} د'),
                         _Meta(label: 'من ${technician.startingPrice} ر.س'),
                       ],

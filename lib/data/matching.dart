@@ -7,6 +7,7 @@ List<Technician> techniciansFor({
   required String categoryId,
   required String city,
   TechnicianSort order = TechnicianSort.nearest,
+  double Function(Technician technician)? ratingOf,
 }) {
   final list = technicians
       .where(
@@ -14,6 +15,8 @@ List<Technician> techniciansFor({
             technician.categoryId == categoryId && technician.city == city,
       )
       .toList();
+  double score(Technician technician) =>
+      ratingOf?.call(technician) ?? technician.rating;
 
   switch (order) {
     case TechnicianSort.nearest:
@@ -23,11 +26,11 @@ List<Technician> techniciansFor({
         }
         final byEta = a.etaMinutes.compareTo(b.etaMinutes);
         if (byEta != 0) return byEta;
-        return b.rating.compareTo(a.rating);
+        return score(b).compareTo(score(a));
       });
     case TechnicianSort.rating:
       list.sort((a, b) {
-        final byRating = b.rating.compareTo(a.rating);
+        final byRating = score(b).compareTo(score(a));
         if (byRating != 0) return byRating;
         return b.jobs.compareTo(a.jobs);
       });

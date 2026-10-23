@@ -213,6 +213,13 @@ class _JobCard extends StatelessWidget {
             Text('${request.city} · ${request.whenLabel}'),
             const SizedBox(height: 4),
             Text('جوال العميل: ${formatPhone(request.phone)}'),
+            if (model.ratingForRequest(request.id) case final rating?) ...[
+              const SizedBox(height: 6),
+              Text(
+                'تقييم العميل: ${rating.stars} من 5 · ${rating.comment}',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ],
             if (request.status == RequestStatus.waiting) ...[
               const SizedBox(height: 12),
               FilledButton(

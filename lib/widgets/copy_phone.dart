@@ -11,16 +11,20 @@ class PhoneLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(prefix),
-        const SizedBox(width: 6),
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: Text(formatPhone(digits)),
-        ),
-      ],
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: prefix),
+          const TextSpan(text: ' '),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text(formatPhone(digits)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

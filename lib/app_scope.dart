@@ -33,6 +33,7 @@ class AppModel extends ChangeNotifier {
   final List<ServiceOrder> _orders;
   ProviderAccount? _session;
   final Map<String, ClientSubscription> _clients = {};
+  final List<ProviderRating> _ratings = [];
   int _sequence = 1040;
   int _clientOrderSequence = 0;
   bool _adminUnlocked = false;
@@ -271,6 +272,83 @@ class AppModel extends ChangeNotifier {
     );
     notifyListeners();
     return true;
+  }
+
+  ServiceRequest? requestById(String id) {
+    for (final request in requests) {
+      if (request.id == id) return request;
+    }
+    return null;
+  }
+
+  ProviderRating? ratingForRequest(String requestId) {
+    for (final rating in _ratings) {
+      if (rating.requestId == requestId) return rating;
+    }
+    return null;
+  }
+
+  double displayRating(Technician technician) {
+    final extra = [
+      for (final rating in _ratings)
+        if (rating.technicianId == technician.id) rating,
+    ];
+    if (extra.isEmpty) return technician.rating;
+    final added = extra.fold<int>(0, (sum, rating) => sum + rating.stars);
+    final total = technician.rating * technician.jobs + added;
+    return total / (technician.jobs + extra.length);
+  }
+
+  int displayJobs(Technician technician) {
+    final extra = _ratings
+        .where((rating) => rating.technicianId == technician.id)
+        .length;
+    return technician.jobs + extra;
+  }
+
+  CustomerReview displayReview(Technician technician) {
+    ProviderRating? latest;
+    for (final rating in _ratings) {
+      if (rating.technicianId != technician.id) continue;
+      if (latest == null || rating.createdAt.isAfter(latest.createdAt)) {
+        latest = rating;
+      }
+    }
+    if (latest == null) return technician.review;
+    return CustomerReview(
+      author: latest.author,
+      text: latest.comment,
+      stars: latest.stars,
+    );
+  }
+
+  String? submitRating({
+    required String requestId,
+    required int stars,
+    required String comment,
+    String author = 'عميل Servick',
+  }) {
+    if (stars < 1 || stars > 5) return 'اختر تقييماً من نجمة إلى خمس';
+    final request = requestById(requestId);
+    if (request == null) return 'الطلب غير موجود';
+    final technicianId = request.technicianId;
+    if (technicianId == null) return 'لا يوجد مقدم خدمة مرتبط بهذا الطلب';
+    if (request.status == RequestStatus.waiting) {
+      return 'التقييم متاح بعد توجيه فني';
+    }
+    if (ratingForRequest(requestId) != null) return 'تم تقييم هذا الطلب من قبل';
+    _ratings.add(
+      ProviderRating(
+        requestId: requestId,
+        technicianId: technicianId,
+        stars: stars,
+        comment: comment.trim().isEmpty ? 'بدون تعليق' : comment.trim(),
+        author: author.trim().isEmpty ? 'عميل Servick' : author.trim(),
+        createdAt: _now(),
+      ),
+    );
+    notifyListeners();
+    return null;
   }
 
   bool completeRequest({

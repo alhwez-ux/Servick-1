@@ -10,6 +10,7 @@ import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/common.dart';
 import '../widgets/copy_phone.dart';
+import '../widgets/provider_rating_panel.dart';
 import '../widgets/servick_scaffold.dart';
 import '../widgets/technician_tile.dart';
 
@@ -320,6 +321,10 @@ class _EmergencyResult extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
+          if (technician != null) ...[
+            const SizedBox(height: 16),
+            ProviderRatingPanel(requestId: request.id),
+          ],
           const SizedBox(height: 12),
           const DemoNote(),
           const SizedBox(height: 18),

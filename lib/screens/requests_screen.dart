@@ -133,6 +133,19 @@ class _RequestCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(technician.name),
               ],
+              if (request.technicianId != null &&
+                  request.status != RequestStatus.waiting &&
+                  AppScope.of(context).ratingForRequest(request.id) ==
+                      null) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'قيّم مقدم الخدمة',
+                  style: TextStyle(
+                    color: ServickColors.navy,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
               const SizedBox(height: 4),
               Text(
                 formatRiyadh(request.createdAt),

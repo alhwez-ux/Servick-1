@@ -28,6 +28,7 @@ class _TechniciansScreenState extends State<TechniciansScreen> {
       categoryId: category.id,
       city: model.city,
       order: _order,
+      ratingOf: model.displayRating,
     );
     final registered = technicianCount(
       categoryId: category.id,

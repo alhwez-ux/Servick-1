@@ -38,10 +38,29 @@ class ServiceCategory {
 }
 
 class CustomerReview {
-  const CustomerReview({required this.author, required this.text});
+  const CustomerReview({required this.author, required this.text, this.stars});
 
   final String author;
   final String text;
+  final int? stars;
+}
+
+class ProviderRating {
+  const ProviderRating({
+    required this.requestId,
+    required this.technicianId,
+    required this.stars,
+    required this.comment,
+    required this.author,
+    required this.createdAt,
+  });
+
+  final String requestId;
+  final String technicianId;
+  final int stars;
+  final String comment;
+  final String author;
+  final DateTime createdAt;
 }
 
 class Technician {

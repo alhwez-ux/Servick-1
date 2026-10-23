@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app_scope.dart';
 import '../data/catalog.dart';
 import '../data/format.dart';
 import '../routes.dart';
@@ -24,7 +25,10 @@ class TechnicianScreen extends StatelessWidget {
       );
     }
 
+    final model = AppScope.of(context);
     final category = categoryById(technician.categoryId);
+    final score = model.displayRating(technician);
+    final review = model.displayReview(technician);
     return ServickScaffold(
       title: category.title,
       showCity: false,
@@ -111,7 +115,10 @@ class TechnicianScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _Stat(label: 'الطلبات', value: '${technician.jobs}'),
+                  child: _Stat(
+                    label: 'الطلبات',
+                    value: '${model.displayJobs(technician)}',
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -189,19 +196,28 @@ class TechnicianScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          technician.rating.toStringAsFixed(1),
+                          score.toStringAsFixed(1),
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         const Spacer(),
                         Text(
-                          technician.review.author,
+                          review.author,
                           style: const TextStyle(color: ServickColors.muted),
                         ),
                       ],
                     ),
+                    if (review.stars != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        '${review.stars} من 5',
+                        key: const Key('latest-review-stars'),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     Text(
-                      technician.review.text,
+                      review.text,
+                      key: const Key('latest-review-text'),
                       style: const TextStyle(height: 1.6),
                     ),
                   ],
