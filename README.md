@@ -52,6 +52,16 @@ flutter run -d web-server --web-hostname 127.0.0.1 --web-port 47231
 
 ثم افتح http://127.0.0.1:47231
 
+## النشر على Vercel
+
+الموقع الثابت يُبنى إلى المجلد `hosting` ثم يُخدم كما هو. Vercel لا يثبّت Flutter أثناء البناء.
+
+```bash
+bash scripts/build-web.sh
+```
+
+بعد تحديث الواجهة أعد البناء وارفع `hosting` مع `vercel.json`. ملف `vercel.json` يوجّه أي مسار غير موجود إلى `index.html`.
+
 ## الاختبار
 
 ```bash

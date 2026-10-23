@@ -1,0 +1,8 @@
+{
+  "installCommand": "echo 'Static Flutter web bundle. No install step.'",
+  "buildCommand": "echo 'Using the committed hosting bundle.'",
+  "outputDirectory": "hosting",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
