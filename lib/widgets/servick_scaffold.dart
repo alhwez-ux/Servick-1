@@ -36,45 +36,43 @@ class ServickBrand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const FittedBox(
+    return FittedBox(
       fit: BoxFit.scaleDown,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _ToolBadge(
-            asset: 'assets/brand/badge_gear.png',
-            label: 'ترس مدمج فيه حرف س',
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/brand/servick_mark.png',
+              width: 40,
+              height: 40,
+              filterQuality: FilterQuality.medium,
+              semanticLabel: 'شعار سيرفيسك',
+            ),
           ),
-          SizedBox(width: 8),
-          Text('سيرفيسك'),
-          SizedBox(width: 8),
-          _ToolBadge(
-            asset: 'assets/brand/badge_screwdriver.png',
-            label: 'مفك مدمج فيه حرف S',
+          const SizedBox(width: 8),
+          const Text('سيرفيسك'),
+          const SizedBox(width: 8),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              color: ServickColors.amber,
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Text(
+                'Servick',
+                style: TextStyle(
+                  color: ServickColors.navy,
+                  fontFamily: 'Cairo',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ToolBadge extends StatelessWidget {
-  const _ToolBadge({required this.asset, required this.label});
-
-  final String asset;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.asset(
-        asset,
-        width: 78,
-        height: 30,
-        fit: BoxFit.fill,
-        filterQuality: FilterQuality.medium,
-        semanticLabel: label,
       ),
     );
   }
