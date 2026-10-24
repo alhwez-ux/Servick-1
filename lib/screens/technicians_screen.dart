@@ -4,6 +4,7 @@ import '../app_scope.dart';
 import '../data/matching.dart';
 import '../models/models.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/service_artwork.dart';
 import '../widgets/servick_scaffold.dart';
 import '../widgets/technician_tile.dart';
 
@@ -137,11 +138,7 @@ class _CategoryIntro extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: category.color.withValues(alpha: 0.12),
-              child: Icon(category.icon, color: category.color),
-            ),
+            ServiceArtwork(category: category, height: 52),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

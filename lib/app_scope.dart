@@ -6,6 +6,7 @@ import 'data/orders.dart';
 import 'data/order_categories.dart';
 import 'data/phone.dart';
 import 'data/providers.dart';
+import 'data/service_pictures.dart';
 import 'data/client_plans.dart';
 import 'models/client_subscription.dart';
 import 'models/desk.dart';
@@ -174,7 +175,11 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String? addService({required String title, required String subtitle}) {
+  String? addService({
+    required String title,
+    required String subtitle,
+    String? pictureId,
+  }) {
     final cleanTitle = title.trim();
     if (cleanTitle.isEmpty) return 'اكتب اسم الخدمة';
     if (cleanTitle.length > 40) return 'اسم الخدمة أطول من أربعين حرفاً';
@@ -185,7 +190,9 @@ class AppModel extends ChangeNotifier {
     final cleanSubtitle = subtitle.trim().isEmpty
         ? 'خدمة أضافها المالك خلال الجلسة'
         : subtitle.trim();
-    if (cleanSubtitle.length > 80) return 'الوصف أطول من ثمانين حرفاً';
+    if (cleanSubtitle.length > serviceSubtitleMaxLength) {
+      return 'الوصف أطول من ثمانين حرفاً';
+    }
     _serviceSequence += 1;
     const colors = <Color>[
       Color(0xFF1E3A8A),
@@ -200,6 +207,9 @@ class AppModel extends ChangeNotifier {
       Icons.plumbing,
     ];
     final slot = (_serviceSequence - 1) % colors.length;
+    final picture = pictureId == null
+        ? pictureForTitle(cleanTitle)
+        : servicePictureById(pictureId);
     _extraCategories.add(
       ServiceCategory(
         id: 'custom-$_serviceSequence',
@@ -207,6 +217,7 @@ class AppModel extends ChangeNotifier {
         subtitle: cleanSubtitle,
         icon: icons[slot],
         color: colors[slot],
+        imageAsset: picture.asset,
       ),
     );
     notifyListeners();

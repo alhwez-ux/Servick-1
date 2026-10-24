@@ -22,6 +22,7 @@ flutter:
   assets:
     - assets/brand/servick_mark.png
     - assets/brand/hood_open.jpg
+    - assets/services/
   fonts:
     - family: Cairo
       fonts:

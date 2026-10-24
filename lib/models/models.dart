@@ -28,6 +28,7 @@ class ServiceCategory {
     required this.subtitle,
     required this.icon,
     required this.color,
+    this.imageAsset,
   });
 
   final String id;
@@ -35,6 +36,7 @@ class ServiceCategory {
   final String subtitle;
   final IconData icon;
   final Color color;
+  final String? imageAsset;
 }
 
 class CustomerReview {

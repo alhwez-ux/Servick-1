@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
 import 'package:servick/data/admin.dart';
 import 'package:servick/data/providers.dart';
+import 'package:servick/data/service_pictures.dart';
 import 'package:servick/main.dart';
 
 void main() {
@@ -13,7 +14,27 @@ void main() {
     expect(model.addService(title: ' ', subtitle: ''), 'اكتب اسم الخدمة');
     expect(model.addService(title: 'صيانة مكيفات', subtitle: ''), isNull);
     expect(model.addedServices.single.title, 'صيانة مكيفات');
+    expect(
+      model.addedServices.single.imageAsset,
+      pictureForTitle('صيانة مكيفات').asset,
+    );
     expect(model.serviceCategories.last.id, 'custom-1');
+    expect(
+      model.addService(title: 'سطحة ليلية', subtitle: 'سحب داخل المدينة'),
+      isNull,
+    );
+    expect(
+      model.addedServices.last.imageAsset,
+      pictureForTitle('سطحة ليلية').asset,
+    );
+    expect(
+      model.addService(title: 'خدمة خاصة', subtitle: 'بلا كلمة معروفة'),
+      isNull,
+    );
+    expect(
+      model.addedServices.last.imageAsset,
+      pictureForTitle('خدمة خاصة').asset,
+    );
     expect(
       model.addService(title: 'صيانة مكيفات', subtitle: 'مرة ثانية'),
       'هذه الخدمة موجودة',
@@ -55,6 +76,13 @@ void main() {
       find.byKey(const Key('service-subtitle')),
       'فحص وتعبئة مكيف المركبة',
     );
+    await tester.pump();
+    expect(find.byKey(const Key('subtitle-count')), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('subtitle-count'))).data,
+      contains('23/80'),
+    );
+    expect(find.byKey(const Key('picture-ac')), findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('save-service')));
     await tester.tap(find.byKey(const Key('save-service')));
     await tester.pump();
