@@ -219,7 +219,7 @@ class _ClientAccountCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'أنشئ حساباً ليصل طلبك واشتراكك من أي جهاز. لا توجد حسابات تجريبية جاهزة.',
+                  'أنشئ حسابك معنا للاستفادة من خدمات منصة سيرفيسك، جميع الخدمات في متناول يدك.',
                   style: TextStyle(color: ServickColors.muted, height: 1.5),
                 ),
                 const SizedBox(height: 12),
