@@ -253,7 +253,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                           child: Padding(
                             padding: EdgeInsets.only(top: 12),
                             child: Text(
-                              'أوافق على سياسة الخصوصية. المنصة للربط فقط، والتحقق من الحرفي بالهاتف مسؤولية العميل.',
+                              'أوافق على سياسة الخصوصية والشروط. المنصة وسيط، ورسوم الاشتراك غير مستردة.',
                               style: TextStyle(fontSize: 13, height: 1.4),
                             ),
                           ),

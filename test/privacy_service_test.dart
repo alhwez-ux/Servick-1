@@ -107,4 +107,31 @@ void main() {
     );
     expect(find.text('بوابة الحرفيين والورش'), findsOneWidget);
   });
+
+  testWidgets('the privacy page shows the October 2026 terms', (tester) async {
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ServickApp(model: AppModel(now: () => DateTime.utc(2026, 10, 23, 12))),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('nav-privacy')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('أكتوبر 2026م'), findsOneWidget);
+    expect(find.textContaining('خميس مشيط، أبها، أحد رفيدة'), findsOneWidget);
+    await tester.scrollUntilVisible(find.textContaining('غير مستردة'), 400);
+    await tester.scrollUntilVisible(
+      find.textContaining('لا نقوم ببيع أو تأجير بياناتك'),
+      400,
+    );
+    await tester.scrollUntilVisible(
+      find.textContaining('قنوات الدعم الفني'),
+      400,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

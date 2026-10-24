@@ -23,8 +23,17 @@ class PrivacyPolicyScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'نص التشغيل لهذه النسخة. الموافقة شرط لتسجيل العميل ومقدم الخدمة.',
-              style: TextStyle(color: ServickColors.muted, height: 1.6),
+              privacyPolicyUpdated,
+              style: TextStyle(
+                color: ServickColors.amber,
+                fontWeight: FontWeight.w700,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              privacyPolicyIntro,
+              style: TextStyle(color: ServickColors.muted, height: 1.7),
             ),
             const SizedBox(height: 16),
             for (final section in privacySections) ...[
