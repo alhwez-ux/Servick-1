@@ -24,6 +24,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/brand/servick_mark.png
+    - assets/brand/badge_gear.png
+    - assets/brand/badge_screwdriver.png
     - assets/brand/hood_open.jpg
     - assets/services/
   fonts:

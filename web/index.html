@@ -36,22 +36,18 @@
       font-family: "Noto Naskh Arabic", "Noto Sans Arabic", Tahoma, sans-serif;
       z-index: 1;
     }
+    .lockup { display: flex; align-items: center; gap: 10px; }
     #boot strong { font-size: 28px; font-weight: 700; }
-    #boot span {
-      background: #F59E0B;
-      color: #1E3A8A;
-      font-weight: 700;
-      border-radius: 8px;
-      padding: 2px 8px;
-      font-size: 13px;
-    }
+    .lockup img { border-radius: 8px; }
   </style>
 </head>
 <body>
   <div id="boot">
-    <img src="icons/Icon-192.png" width="84" height="84" alt="" style="border-radius:20px" />
-    <strong>سيرفيسك</strong>
-    <span>Servick</span>
+    <div class="lockup">
+      <img src="icons/badge-gear.png" width="80" height="31" alt="">
+      <strong>سيرفيسك</strong>
+      <img src="icons/badge-screwdriver.png" width="80" height="31" alt="">
+    </div>
   </div>
   <script>
     window.addEventListener('flutter-first-frame', function () {
