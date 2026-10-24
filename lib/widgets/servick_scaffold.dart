@@ -31,47 +31,56 @@ class ServickFrame extends StatelessWidget {
   }
 }
 
+const _servickChipStyle = TextStyle(
+  color: ServickColors.navy,
+  fontFamily: 'Cairo',
+  fontWeight: FontWeight.w700,
+  fontSize: 12,
+);
+
 class ServickBrand extends StatelessWidget {
   const ServickBrand({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final label = TextPainter(
+      text: const TextSpan(text: 'Servick', style: _servickChipStyle),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final chipWidth = label.width + 16;
+    final chipHeight = label.height + 4;
+
+    Widget chip(Widget child) {
+      return DecoratedBox(
+        decoration: const BoxDecoration(
+          color: ServickColors.amber,
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
+        child: SizedBox(width: chipWidth, height: chipHeight, child: child),
+      );
+    }
+
     return FittedBox(
       fit: BoxFit.scaleDown,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              'assets/brand/servick_mark.png',
-              width: 40,
-              height: 40,
-              filterQuality: FilterQuality.medium,
-              semanticLabel: 'شعار سيرفيسك',
+          chip(
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Image(
+                image: AssetImage('assets/brand/servick_symbol.png'),
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.medium,
+                semanticLabel: 'شعار سيرفيسك',
+              ),
             ),
           ),
           const SizedBox(width: 8),
           const Text('سيرفيسك'),
           const SizedBox(width: 8),
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              color: ServickColors.amber,
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: Text(
-                'Servick',
-                style: TextStyle(
-                  color: ServickColors.navy,
-                  fontFamily: 'Cairo',
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ),
+          chip(const Center(child: Text('Servick', style: _servickChipStyle))),
         ],
       ),
     );
