@@ -1,3 +1,14 @@
+const complimentaryWarningDays = 7;
+const freeMonthDays = 30;
+
+const complimentaryWarningText =
+    'خدمات التطبيق ستتوقف بعد 7 أيام في حال عدم دفع رسوم الاشتراك.';
+
+const complimentaryEndedText =
+    'انتهت المدة المجانية. توقفت خدمات التطبيق حتى دفع رسوم الاشتراك.';
+
+enum ComplimentaryPhase { inactive, open, warning, ended }
+
 class BillingConfig {
   const BillingConfig({
     required this.providerAnnualFee,
@@ -6,6 +17,10 @@ class BillingConfig {
     required this.nextNumber,
     required this.note,
     required this.invoicesEnabled,
+    this.providerFreeMonths = 0,
+    this.clientFreeMonths = 0,
+    this.providerFreeAnchor,
+    this.clientFreeAnchor,
   });
 
   final int providerAnnualFee;
@@ -14,6 +29,10 @@ class BillingConfig {
   final int nextNumber;
   final String note;
   final bool invoicesEnabled;
+  final int providerFreeMonths;
+  final int clientFreeMonths;
+  final DateTime? providerFreeAnchor;
+  final DateTime? clientFreeAnchor;
 
   BillingConfig copyWith({
     int? providerAnnualFee,
@@ -22,6 +41,10 @@ class BillingConfig {
     int? nextNumber,
     String? note,
     bool? invoicesEnabled,
+    int? providerFreeMonths,
+    int? clientFreeMonths,
+    DateTime? providerFreeAnchor,
+    DateTime? clientFreeAnchor,
   }) {
     return BillingConfig(
       providerAnnualFee: providerAnnualFee ?? this.providerAnnualFee,
@@ -30,6 +53,10 @@ class BillingConfig {
       nextNumber: nextNumber ?? this.nextNumber,
       note: note ?? this.note,
       invoicesEnabled: invoicesEnabled ?? this.invoicesEnabled,
+      providerFreeMonths: providerFreeMonths ?? this.providerFreeMonths,
+      clientFreeMonths: clientFreeMonths ?? this.clientFreeMonths,
+      providerFreeAnchor: providerFreeAnchor ?? this.providerFreeAnchor,
+      clientFreeAnchor: clientFreeAnchor ?? this.clientFreeAnchor,
     );
   }
 }

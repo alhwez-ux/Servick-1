@@ -61,9 +61,54 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
         );
       case ProviderSubscriptionExpired(:final account):
         _showSubscriptionExpiredDialog(account.id);
+      case ProviderFreePeriodEnded(:final account):
+        _showFreePeriodEndedDialog(account.id);
       case ProviderLoginFailure(:final message):
         _snack(message);
     }
+  }
+
+  void _showFreePeriodEndedDialog(String providerId) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(
+            'انتهت المدة المجانية',
+            style: TextStyle(
+              color: ServickColors.emergency,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: const Text(
+            'توقفت خدمات التطبيق حتى دفع رسوم الاشتراك.',
+            style: TextStyle(fontSize: 14, height: 1.5),
+          ),
+          actions: [
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: ServickColors.navy,
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(
+                  context,
+                ).pushNamed(ServickRoutes.providerRenew, arguments: providerId);
+              },
+              child: const Text('سداد رسوم الاشتراك'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(color: ServickColors.muted),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showSubscriptionExpiredDialog(String providerId) {

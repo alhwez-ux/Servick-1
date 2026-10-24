@@ -44,6 +44,11 @@ class _ClientOrderScreenState extends State<ClientOrderScreen> {
     }
     final allowed = await requireClientPrivacy(context);
     if (!allowed || !mounted) return;
+    final block = AppScope.of(context).clientServiceBlock(widget.clientId);
+    if (block != null) {
+      _snack(block);
+      return;
+    }
 
     setState(() => _isLoading = true);
     final error = AppScope.of(context).submitClientOrder(

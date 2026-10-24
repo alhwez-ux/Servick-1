@@ -58,3 +58,9 @@ class ProviderSubscriptionExpired extends ProviderLoginResult {
 
   final ProviderAccount account;
 }
+
+class ProviderFreePeriodEnded extends ProviderLoginResult {
+  const ProviderFreePeriodEnded(this.account);
+
+  final ProviderAccount account;
+}

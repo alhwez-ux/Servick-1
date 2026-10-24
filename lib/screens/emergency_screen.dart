@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
 import '../data/catalog.dart';
+import '../data/client_plans.dart';
 import '../data/format.dart';
 import '../data/matching.dart';
 import '../data/phone.dart';
@@ -47,6 +48,12 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     if (!issueOk || !formOk) return;
     final allowed = await requireClientPrivacy(context);
     if (!allowed || !mounted) return;
+    final block = AppScope.of(context).clientServiceBlock(demoClientId);
+    if (block != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(block)));
+      return;
+    }
 
     final model = AppScope.of(context);
     final issue = issueById(_issueId!);

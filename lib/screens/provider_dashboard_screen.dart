@@ -8,6 +8,7 @@ import '../models/order.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/common.dart';
+import '../widgets/complimentary_notice.dart';
 import '../widgets/desk_inbox.dart';
 import '../widgets/servick_scaffold.dart';
 
@@ -65,6 +66,16 @@ class ProviderDashboardScreen extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
             ),
             const SizedBox(height: 12),
+            ComplimentaryNotice(
+              audience: 'provider',
+              recipientId: session.id,
+              onPay: () {
+                Navigator.of(context).pushNamed(
+                  ServickRoutes.providerSubscription,
+                  arguments: session.id,
+                );
+              },
+            ),
             DeskInbox(
               audience: 'provider',
               recipientId: session.id,

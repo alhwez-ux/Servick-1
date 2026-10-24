@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
 import '../data/catalog.dart';
+import '../data/client_plans.dart';
 import '../data/phone.dart';
 import '../models/models.dart';
 import '../routes.dart';
@@ -37,6 +38,12 @@ class _BookingScreenState extends State<BookingScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final allowed = await requireClientPrivacy(context);
     if (!allowed || !mounted) return;
+    final block = AppScope.of(context).clientServiceBlock(demoClientId);
+    if (block != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(block)));
+      return;
+    }
     final request = AppScope.of(context).submit(
       kind: RequestKind.booking,
       categoryId: technician.categoryId,

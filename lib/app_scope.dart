@@ -358,6 +358,16 @@ class AppModel extends ChangeNotifier {
       return const ProviderLoginFailure('كلمة المرور غير صحيحة');
     }
     if (!account.isSubscribedAt(_now())) {
+      final phase = providerComplimentaryPhase(account);
+      if (phase == ComplimentaryPhase.open ||
+          phase == ComplimentaryPhase.warning) {
+        _session = account;
+        notifyListeners();
+        return ProviderLoginSuccess(account);
+      }
+      if (phase == ComplimentaryPhase.ended) {
+        return ProviderFreePeriodEnded(account);
+      }
       return ProviderSubscriptionExpired(account);
     }
     _session = account;
@@ -444,6 +454,10 @@ class AppModel extends ChangeNotifier {
       nextNumber: nextNumber,
       note: trimmedNote,
       invoicesEnabled: invoicesEnabled,
+      providerFreeMonths: _billing.providerFreeMonths,
+      clientFreeMonths: _billing.clientFreeMonths,
+      providerFreeAnchor: _billing.providerFreeAnchor,
+      clientFreeAnchor: _billing.clientFreeAnchor,
     );
     notifyListeners();
     return null;
@@ -653,6 +667,129 @@ class AppModel extends ChangeNotifier {
     requests[index] = request.copyWith(status: RequestStatus.completed);
     notifyListeners();
     return true;
+  }
+
+  DateTime? complimentaryEnd({required bool forProvider}) {
+    final months = forProvider
+        ? _billing.providerFreeMonths
+        : _billing.clientFreeMonths;
+    final anchor = forProvider
+        ? _billing.providerFreeAnchor
+        : _billing.clientFreeAnchor;
+    if (months <= 0 || anchor == null) return null;
+    return anchor.add(Duration(days: months * freeMonthDays));
+  }
+
+  ComplimentaryPhase complimentaryPhase({
+    required bool paid,
+    required DateTime? end,
+  }) {
+    if (paid || end == null) return ComplimentaryPhase.inactive;
+    final now = _now();
+    if (!now.isBefore(end)) return ComplimentaryPhase.ended;
+    final warningStart = end.subtract(
+      const Duration(days: complimentaryWarningDays),
+    );
+    if (!now.isBefore(warningStart)) return ComplimentaryPhase.warning;
+    return ComplimentaryPhase.open;
+  }
+
+  ComplimentaryPhase providerComplimentaryPhase(ProviderAccount account) {
+    return complimentaryPhase(
+      paid: account.isSubscribedAt(_now()),
+      end: complimentaryEnd(forProvider: true),
+    );
+  }
+
+  ComplimentaryPhase clientComplimentaryPhase(String clientId) {
+    final subscription = _clients[clientId];
+    return complimentaryPhase(
+      paid: subscription != null && subscription.isActiveAt(_now()),
+      end: complimentaryEnd(forProvider: false),
+    );
+  }
+
+  String? clientServiceBlock(String clientId) {
+    if (clientComplimentaryPhase(clientId) != ComplimentaryPhase.ended) {
+      return null;
+    }
+    return complimentaryEndedText;
+  }
+
+  String? updateFreeMonths({
+    required String providerRaw,
+    required String clientRaw,
+  }) {
+    final providerMonths = int.tryParse(providerRaw.trim());
+    final clientMonths = int.tryParse(clientRaw.trim());
+    if (providerMonths == null || providerMonths < 0 || providerMonths > 24) {
+      return 'أدخل المدة المجانية لمقدم الخدمة من 0 إلى 24 شهراً';
+    }
+    if (clientMonths == null || clientMonths < 0 || clientMonths > 24) {
+      return 'أدخل المدة المجانية للعميل من 0 إلى 24 شهراً';
+    }
+    final now = _now();
+    final providerAnchor = providerMonths == 0
+        ? null
+        : providerMonths == _billing.providerFreeMonths &&
+              _billing.providerFreeAnchor != null
+        ? _billing.providerFreeAnchor
+        : now;
+    final clientAnchor = clientMonths == 0
+        ? null
+        : clientMonths == _billing.clientFreeMonths &&
+              _billing.clientFreeAnchor != null
+        ? _billing.clientFreeAnchor
+        : now;
+    _billing = BillingConfig(
+      providerAnnualFee: _billing.providerAnnualFee,
+      planPrices: _billing.planPrices,
+      invoicePrefix: _billing.invoicePrefix,
+      nextNumber: _billing.nextNumber,
+      note: _billing.note,
+      invoicesEnabled: _billing.invoicesEnabled,
+      providerFreeMonths: providerMonths,
+      clientFreeMonths: clientMonths,
+      providerFreeAnchor: providerAnchor,
+      clientFreeAnchor: clientAnchor,
+    );
+    notifyListeners();
+    return null;
+  }
+
+  void ensureComplimentaryNotice({
+    required String audience,
+    required String recipientId,
+  }) {
+    final ComplimentaryPhase phase;
+    if (audience == 'provider') {
+      final account = providerById(recipientId);
+      if (account == null) return;
+      phase = providerComplimentaryPhase(account);
+    } else {
+      phase = clientComplimentaryPhase(recipientId);
+    }
+    if (phase != ComplimentaryPhase.warning) return;
+    final id = 'free-warn-$audience-$recipientId';
+    if (_messages.any((message) => message.id == id)) return;
+    final name = audience == 'provider'
+        ? findTechnician(providerById(recipientId)?.technicianId)?.name ??
+              'مقدم الخدمة'
+        : recipientId == demoClientId
+        ? demoClientName
+        : 'العميل';
+    _messages.insert(
+      0,
+      DeskMessage(
+        id: id,
+        audience: audience,
+        recipientId: recipientId,
+        recipientName: name,
+        body: complimentaryWarningText,
+        createdAt: _now(),
+      ),
+    );
+    notifyListeners();
   }
 
   String? subscribeClient({

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app_scope.dart';
 import '../data/catalog.dart';
@@ -88,6 +89,8 @@ class AdminDashboardScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16),
+              const _FreeMonthsCard(),
+              const SizedBox(height: 16),
               if (wide)
                 Row(
                   children: [
@@ -151,6 +154,128 @@ class AdminDashboardScreen extends StatelessWidget {
       count: count,
       icon: Icons.car_repair,
       color: const Color(0xFF10B981),
+    );
+  }
+}
+
+class _FreeMonthsCard extends StatefulWidget {
+  const _FreeMonthsCard();
+
+  @override
+  State<_FreeMonthsCard> createState() => _FreeMonthsCardState();
+}
+
+class _FreeMonthsCardState extends State<_FreeMonthsCard> {
+  final _providerMonths = TextEditingController();
+  final _clientMonths = TextEditingController();
+  var _ready = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_ready) return;
+    _ready = true;
+    final billing = AppScope.of(context).billing;
+    _providerMonths.text = '${billing.providerFreeMonths}';
+    _clientMonths.text = '${billing.clientFreeMonths}';
+  }
+
+  @override
+  void dispose() {
+    _providerMonths.dispose();
+    _clientMonths.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final model = AppScope.of(context);
+    final error = model.updateFreeMonths(
+      providerRaw: _providerMonths.text,
+      clientRaw: _clientMonths.text,
+    );
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.removeCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(content: Text(error ?? 'تم حفظ المدة المجانية')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final model = AppScope.of(context);
+    final providerEnd = model.complimentaryEnd(forProvider: true);
+    final clientEnd = model.complimentaryEnd(forProvider: false);
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: ServickColors.line),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'المدة المجانية',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'يحدد المالك عدد الأشهر لمقدم الخدمة وللعميل. قبل نهاية المدة بأسبوع يصل تنبيه بأن خدمات التطبيق ستتوقف بعد 7 أيام إذا لم تُدفع رسوم الاشتراك. من دفع اشتراكه لا يتأثر.',
+              style: TextStyle(
+                color: ServickColors.muted,
+                height: 1.6,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('free-provider-months'),
+              controller: _providerMonths,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                labelText: 'المدة المجانية لمقدم الخدمة',
+                suffixText: 'شهر',
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              key: const Key('free-client-months'),
+              controller: _clientMonths,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                labelText: 'المدة المجانية للعميل',
+                suffixText: 'شهر',
+              ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              key: const Key('save-free-months'),
+              onPressed: _save,
+              child: const Text('حفظ المدة المجانية'),
+            ),
+            if (providerEnd != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                'تنتهي مجانية مقدم الخدمة في ${formatSubscriptionDate(providerEnd)}',
+                key: const Key('free-provider-end'),
+                style: const TextStyle(height: 1.5),
+              ),
+            ],
+            if (clientEnd != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                'تنتهي مجانية العميل في ${formatSubscriptionDate(clientEnd)}',
+                key: const Key('free-client-end'),
+                style: const TextStyle(height: 1.5),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

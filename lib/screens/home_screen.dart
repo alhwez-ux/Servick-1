@@ -11,6 +11,7 @@ import '../models/order.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/category_card.dart';
+import '../widgets/complimentary_notice.dart';
 import '../widgets/desk_inbox.dart';
 import '../widgets/common.dart';
 import '../widgets/hood_open_scene.dart';
@@ -41,6 +42,19 @@ class ClientHomeScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _EmergencyBanner(city: model.city),
               const SizedBox(height: 16),
+              ComplimentaryNotice(
+                audience: 'client',
+                recipientId: demoClientId,
+                onPay: () {
+                  Navigator.of(context).pushNamed(
+                    ServickRoutes.clientSubscription,
+                    arguments: const ClientSubscriptionArgs(
+                      clientId: demoClientId,
+                      isAdmin: false,
+                    ),
+                  );
+                },
+              ),
               DeskInbox(audience: 'client', recipientId: demoClientId),
               const SizedBox(height: 6),
               if (openNow.isNotEmpty) ...[
