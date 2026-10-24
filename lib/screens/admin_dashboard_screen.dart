@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_scope.dart';
-import '../data/catalog.dart';
+import '../widgets/confirm_action.dart';
 import '../data/format.dart';
 import '../models/provider.dart';
 import '../routes.dart';
@@ -51,7 +51,7 @@ class AdminDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               const Text(
-                'عاين تفاصيل الحرفيين والطلبات، وافتح الشاشات كما يراها العميل، ثم سجّل ما يحتاج تعديلاً أو إضافة. التفعيل لا يخصم مبلغاً، والبيانات تبقى داخل الجلسة.',
+                'الحسابات والطلبات والخدمات تُحفظ على الويب وتظهر من أي جهاز تدخل منه. لا تُحذف بيانات المستخدم إلا من هنا، أو بعد موافقتك على طلب الحذف. التفعيل لا يخصم مبلغاً.',
                 style: TextStyle(
                   color: ServickColors.muted,
                   fontSize: 13,
@@ -104,6 +104,10 @@ class AdminDashboardScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 _ordersCard(model.orderCount),
               ],
+              const SizedBox(height: 24),
+              const _DeletionRequests(),
+              const SizedBox(height: 16),
+              const _AccountDirectory(),
               const SizedBox(height: 24),
               const Text(
                 'طلبات الحرفيين بانتظار الاعتماد وتفعيل الاشتراك',
@@ -396,6 +400,164 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+Future<void> _deleteAccount(
+  BuildContext context, {
+  required String audience,
+  required String accountId,
+}) async {
+  final approved = await confirmAction(
+    context,
+    title: 'حذف الحساب',
+    message:
+        'سيُحذف الحساب وبياناته من كل الأجهزة. لا يمكن التراجع من التطبيق.',
+    confirm: 'حذف الحساب',
+  );
+  if (!approved || !context.mounted) return;
+  final error = AppScope.of(context)
+      .deleteAccount(audience: audience, accountId: accountId);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(error ?? 'تم حذف الحساب وبياناته')));
+}
+
+class _DeletionRequests extends StatelessWidget {
+  const _DeletionRequests();
+
+  @override
+  Widget build(BuildContext context) {
+    final pending = AppScope.of(context).pendingDeletions;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'طلبات حذف الحسابات',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'لا يُحذف الحساب إلا بعد موافقتك، أو مباشرة من زر الحذف.',
+          style: TextStyle(color: ServickColors.muted, height: 1.5),
+        ),
+        const SizedBox(height: 8),
+        if (pending.isEmpty)
+          const Text(
+            'لا توجد طلبات حذف بانتظار الموافقة.',
+            key: Key('deletions-empty'),
+            style: TextStyle(color: ServickColors.muted),
+          )
+        else
+          for (final request in pending)
+            Card(
+              key: Key('deletion-request-${request.id}'),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.accountName,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${request.audience == 'provider' ? 'حرفي' : 'عميل'} · ${formatPhone(request.phone)}',
+                      style: const TextStyle(
+                        color: ServickColors.muted,
+                        height: 1.4,
+                      ),
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        TextButton(
+                          key: Key('reject-deletion-${request.id}'),
+                          onPressed: () {
+                            AppScope.of(context)
+                                .rejectAccountDeletion(request.id);
+                          },
+                          child: const Text('رفض'),
+                        ),
+                        FilledButton(
+                          key: Key('approve-deletion-${request.id}'),
+                          onPressed: () {
+                            AppScope.of(context)
+                                .approveAccountDeletion(request.id);
+                          },
+                          child: const Text('موافقة'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+      ],
+    );
+  }
+}
+
+class _AccountDirectory extends StatelessWidget {
+  const _AccountDirectory();
+
+  @override
+  Widget build(BuildContext context) {
+    final model = AppScope.of(context);
+    final active = model.providers.where(
+      (account) => account.subscriptionStatus == 'active',
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'الحسابات المحفوظة',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        if (model.clientAccounts.isEmpty && active.isEmpty)
+          const Text(
+            'لا توجد حسابات بعد. تظهر هنا بعد تسجيل العملاء والحرفيين.',
+            key: Key('accounts-empty'),
+            style: TextStyle(color: ServickColors.muted, height: 1.5),
+          ),
+        for (final client in model.clientAccounts)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(client.name),
+            subtitle: Text('عميل · ${formatPhone(client.phone)}'),
+            trailing: IconButton(
+              key: Key('owner-delete-client-${client.id}'),
+              tooltip: 'حذف الحساب',
+              onPressed: () => _deleteAccount(
+                context,
+                audience: 'client',
+                accountId: client.id,
+              ),
+              icon: const Icon(Icons.delete_outline),
+            ),
+          ),
+        for (final account in active)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              model.technicianById(account.technicianId)?.name ?? account.phone,
+            ),
+            subtitle: Text('حرفي · ${formatPhone(account.phone)}'),
+            trailing: IconButton(
+              key: Key('owner-delete-provider-${account.id}'),
+              tooltip: 'حذف الحساب',
+              onPressed: () => _deleteAccount(
+                context,
+                audience: 'provider',
+                accountId: account.id,
+              ),
+              icon: const Icon(Icons.delete_outline),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _PendingProviderCard extends StatelessWidget {
   const _PendingProviderCard({required this.account});
 
@@ -403,7 +565,8 @@ class _PendingProviderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final technician = findTechnician(account.technicianId);
+    final technician = AppScope.of(context)
+        .technicianById(account.technicianId);
     final name = technician?.name ?? 'حرفي بدون اسم';
     final city = technician?.city ?? 'خميس مشيط';
 
@@ -451,6 +614,16 @@ class _PendingProviderCard extends StatelessWidget {
               ),
               onPressed: () => _activate(context, account.id),
               child: const Text('تفعيل الحساب', style: TextStyle(fontSize: 12)),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              key: Key('owner-delete-provider-${account.id}'),
+              onPressed: () => _deleteAccount(
+                context,
+                audience: 'provider',
+                accountId: account.id,
+              ),
+              child: const Text('حذف الحساب'),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app_scope.dart';
 import '../data/catalog.dart';
 import '../data/format.dart';
 import '../models/models.dart';
@@ -23,8 +24,9 @@ class RequestDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final technician = findTechnician(request.technicianId);
-    final category = categoryById(request.categoryId);
+    final model = AppScope.of(context);
+    final technician = model.technicianById(request.technicianId);
+    final category = model.categoryOf(request.categoryId) ?? categories.first;
     final assigned = request.status != RequestStatus.waiting;
     final showDetails =
         request.details.trim().isNotEmpty &&

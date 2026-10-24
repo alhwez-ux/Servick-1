@@ -1,15 +1,15 @@
 import '../models/models.dart';
-import 'catalog.dart';
 
 enum TechnicianSort { nearest, rating, availableOnly }
 
 List<Technician> techniciansFor({
+  required List<Technician> people,
   required String categoryId,
   required String city,
   TechnicianSort order = TechnicianSort.nearest,
   double Function(Technician technician)? ratingOf,
 }) {
-  final list = technicians
+  final list = people
       .where(
         (technician) =>
             technician.categoryId == categoryId && technician.city == city,
@@ -42,11 +42,12 @@ List<Technician> techniciansFor({
 }
 
 int technicianCount({
+  required List<Technician> people,
   required String categoryId,
   required String city,
   bool availableOnly = false,
 }) {
-  return technicians
+  return people
       .where(
         (technician) =>
             technician.categoryId == categoryId &&
@@ -56,9 +57,9 @@ int technicianCount({
       .length;
 }
 
-List<Technician> availableInCity(String city) {
+List<Technician> availableInCity(List<Technician> people, String city) {
   final list =
-      technicians
+      people
           .where(
             (technician) => technician.city == city && technician.available,
           )
@@ -72,11 +73,12 @@ List<Technician> availableInCity(String city) {
 }
 
 Technician? nearestAvailable({
+  required List<Technician> people,
   required String city,
   required List<String> categoryIds,
 }) {
   final pool =
-      technicians
+      people
           .where(
             (technician) =>
                 technician.city == city &&
@@ -94,6 +96,7 @@ Technician? nearestAvailable({
 }
 
 List<({String city, int count})> otherCitiesWithTechnicians({
+  required List<Technician> people,
   required String categoryId,
   required String currentCity,
 }) {
@@ -102,7 +105,11 @@ List<({String city, int count})> otherCitiesWithTechnicians({
       if (city != currentCity)
         (
           city: city,
-          count: technicianCount(categoryId: categoryId, city: city),
+          count: technicianCount(
+            people: people,
+            categoryId: categoryId,
+            city: city,
+          ),
         ),
   ].where((entry) => entry.count > 0).toList();
 }

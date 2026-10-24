@@ -6,10 +6,12 @@ abstract final class ServickRoutes {
   static const requests = '/requests';
   static const request = '/request';
   static const providerLogin = '/provider-login';
+  static const providerRegister = '/provider-register';
   static const providerRenew = '/provider-renew';
   static const providerDashboard = '/provider-dashboard';
   static const providerOrders = '/provider-orders';
   static const providerSubscription = '/provider-subscription';
+  static const clientAuth = '/client-auth';
   static const clientSubscription = '/client-subscription';
   static const clientOrder = '/client-order';
   static const adminLogin = '/admin-login';

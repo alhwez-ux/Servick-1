@@ -16,7 +16,8 @@ class TechnicianScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final technician = findTechnician(technicianId);
+    final model = AppScope.of(context);
+    final technician = model.technicianById(technicianId);
     if (technician == null) {
       return const ServickScaffold(
         title: 'الفني',
@@ -25,8 +26,8 @@ class TechnicianScreen extends StatelessWidget {
       );
     }
 
-    final model = AppScope.of(context);
-    final category = categoryById(technician.categoryId);
+    final category =
+        model.categoryOf(technician.categoryId) ?? categories.first;
     final score = model.displayRating(technician);
     final review = model.displayReview(technician);
     return ServickScaffold(

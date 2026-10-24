@@ -27,20 +27,19 @@ class _TechniciansScreenState extends State<TechniciansScreen> {
     if (category == null) {
       return const ServickScaffold(
         title: 'الخدمة',
-        body: Center(child: Text('هذه الخدمة غير موجودة في الجلسة.')),
+        body: Center(child: Text('هذه الخدمة غير موجودة.')),
       );
     }
-    final people = techniciansFor(
+    final people = model.techniciansFor(
       categoryId: category.id,
       city: model.city,
       order: _order,
-      ratingOf: model.displayRating,
     );
-    final registered = technicianCount(
+    final registered = model.technicianCount(
       categoryId: category.id,
       city: model.city,
     );
-    final open = technicianCount(
+    final open = model.technicianCount(
       categoryId: category.id,
       city: model.city,
       availableOnly: true,
@@ -206,7 +205,7 @@ class _EmptyTechnicians extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = AppScope.of(context);
-    final others = otherCitiesWithTechnicians(
+    final others = model.otherCitiesWithTechnicians(
       categoryId: category.id,
       currentCity: city,
     );

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
-import 'package:servick/data/providers.dart';
+import 'package:servick/data/format.dart';
+import 'package:servick/data/password_hash.dart';
 import 'package:servick/main.dart';
+
+import 'support/accounts.dart';
+
 import 'package:servick/models/models.dart';
 import 'package:servick/models/provider.dart';
 
@@ -35,11 +39,20 @@ void main() {
   test('subscription stays closed unless status is active and unexpired', () {
     final now = DateTime.utc(2026, 10, 23, 12);
     final model = AppModel(now: () => now);
-    final active = model.providers.firstWhere(
-      (account) => account.phone == '0554102201',
+    final active = seedProvider(
+      model,
+      name: 'فهد سعيد الشهري',
+      phone: '0554102201',
+      city: 'خميس مشيط',
+      categoryId: 'petrol',
+      active: true,
     );
-    final expired = model.providers.firstWhere(
-      (account) => account.phone == '0554102206',
+    final expired = seedProvider(
+      model,
+      name: 'خالد أحمد عسيري',
+      phone: '0554102206',
+      city: 'أبها',
+      categoryId: 'diesel',
     );
 
     expect(active.isSubscribedAt(now), isTrue);
@@ -47,9 +60,10 @@ void main() {
     expect(
       ProviderAccount(
         id: 'x',
-        technicianId: 'p-km-1',
+        technicianId: 'tech-x',
         phone: '0550000000',
-        password: '123456',
+        passwordHash: hashPassword('123456', 'salt'),
+        passwordSalt: 'salt',
         subscriptionStatus: 'active',
         subscriptionExpiry: null,
       ).isSubscribedAt(now),
@@ -57,10 +71,7 @@ void main() {
     );
 
     expect(
-      model.loginProvider(
-        phone: '055 000 0000',
-        password: demoProviderPassword,
-      ),
+      model.loginProvider(phone: '055 000 0000', password: fixturePassword),
       isA<ProviderLoginFailure>(),
     );
     expect(
@@ -71,21 +82,36 @@ void main() {
 
     final blocked = model.loginProvider(
       phone: '0554102206',
-      password: demoProviderPassword,
+      password: fixturePassword,
     );
     expect(blocked, isA<ProviderSubscriptionExpired>());
     expect(model.providerSession, isNull);
 
     final opened = model.loginProvider(
       phone: '+966554102201',
-      password: demoProviderPassword,
+      password: fixturePassword,
     );
     expect(opened, isA<ProviderLoginSuccess>());
-    expect(model.providerSession?.technicianId, 'p-km-1');
+    expect(model.providerSession?.technicianId, active.technicianId);
   });
 
   test('renewal opens the account and jobs stay inside the craft', () {
     final model = _model();
+    final expired = seedProvider(
+      model,
+      name: 'خالد أحمد عسيري',
+      phone: '0554102206',
+      city: 'أبها',
+      categoryId: 'diesel',
+    );
+    final active = seedProvider(
+      model,
+      name: 'فهد سعيد الشهري',
+      phone: '0554102201',
+      city: 'خميس مشيط',
+      categoryId: 'petrol',
+      active: true,
+    );
     model.submit(
       kind: RequestKind.booking,
       categoryId: 'petrol',
@@ -107,20 +133,20 @@ void main() {
       assignNow: false,
     );
 
-    final renewed = model.renewSubscription('prov-d-ab-1');
+    final renewed = model.renewSubscription(expired.id);
     expect(renewed?.isSubscribedAt(model.now), isTrue);
-    expect(model.providerSession?.id, 'prov-d-ab-1');
+    expect(model.providerSession?.id, expired.id);
     expect(model.jobsFor(renewed!).map((request) => request.summary), [
       'دخان ديزل',
     ]);
 
-    final fahd = model.providers.firstWhere(
-      (account) => account.id == 'prov-p-km-1',
-    );
-    final jobs = model.jobsFor(fahd);
+    final jobs = model.jobsFor(active);
     expect(jobs.single.summary, 'تغيير زيت');
     expect(
-      model.acceptRequest(requestId: jobs.single.id, technicianId: 'p-km-1'),
+      model.acceptRequest(
+        requestId: jobs.single.id,
+        technicianId: active.technicianId,
+      ),
       isTrue,
     );
     expect(
@@ -130,11 +156,17 @@ void main() {
       RequestStatus.assigned,
     );
     expect(
-      model.completeRequest(requestId: jobs.single.id, technicianId: 'd-ab-1'),
+      model.completeRequest(
+        requestId: jobs.single.id,
+        technicianId: expired.technicianId,
+      ),
       isFalse,
     );
     expect(
-      model.completeRequest(requestId: jobs.single.id, technicianId: 'p-km-1'),
+      model.completeRequest(
+        requestId: jobs.single.id,
+        technicianId: active.technicianId,
+      ),
       isTrue,
     );
     expect(
@@ -157,7 +189,20 @@ void main() {
   });
 
   testWidgets('active craftsman reaches the job board', (tester) async {
+    tester.view.physicalSize = const Size(420, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final model = _model();
+    seedProvider(
+      model,
+      name: 'فهد سعيد الشهري',
+      phone: '0554102201',
+      city: 'خميس مشيط',
+      categoryId: 'petrol',
+      active: true,
+    );
     model.submit(
       kind: RequestKind.booking,
       categoryId: 'petrol',
@@ -169,10 +214,7 @@ void main() {
       assignNow: false,
     );
     await _openPortal(tester, model);
-    await tester.ensureVisible(find.byKey(const Key('demo-prov-p-km-1')));
-    await tester.tap(find.byKey(const Key('demo-prov-p-km-1')));
-    await tester.pumpAndSettle();
-    await _signIn(tester, '0554102201', demoProviderPassword);
+    await _signIn(tester, '0554102201', fixturePassword);
 
     expect(find.byKey(const Key('provider-dashboard')), findsOneWidget);
     expect(find.text('فهد سعيد الشهري'), findsOneWidget);
@@ -198,8 +240,15 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final model = _model();
+    seedProvider(
+      model,
+      name: 'خالد أحمد عسيري',
+      phone: '0554102206',
+      city: 'أبها',
+      categoryId: 'diesel',
+    );
     await _openPortal(tester, model);
-    await _signIn(tester, '0554102206', demoProviderPassword);
+    await _signIn(tester, '0554102206', fixturePassword);
 
     expect(find.text('اشتراكك السنوي منتهي'), findsOneWidget);
     expect(model.providerSession, isNull);
@@ -208,7 +257,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('اشتراكك السنوي منتهي أو غير مفعل'), findsOneWidget);
     expect(find.text('سداد رسوم التجديد وتفعيل الحساب'), findsOneWidget);
-    expect(find.textContaining('2026/10/08'), findsOneWidget);
+    expect(
+      find.textContaining(
+        formatSubscriptionDate(
+          model.providerByPhone('0554102206')!.subscriptionExpiry!,
+        ),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const Key('renew-subscription')));
     await tester.pumpAndSettle();

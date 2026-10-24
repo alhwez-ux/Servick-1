@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
 import '../data/catalog.dart';
-import '../data/client_plans.dart';
 import '../data/format.dart';
-import '../data/matching.dart';
 import '../data/phone.dart';
 import '../models/models.dart';
 import '../routes.dart';
@@ -48,16 +46,24 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     if (!issueOk || !formOk) return;
     final allowed = await requireClientPrivacy(context);
     if (!allowed || !mounted) return;
-    final block = AppScope.of(context).clientServiceBlock(demoClientId);
+    final model = AppScope.of(context);
+    final session = model.clientSession;
+    if (session == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('أنشئ حساباً أو ادخل قبل إرسال الطلب')),
+      );
+      await Navigator.of(context).pushNamed(ServickRoutes.clientAuth);
+      return;
+    }
+    final block = model.clientServiceBlock(session.id);
     if (block != null) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(block)));
       return;
     }
 
-    final model = AppScope.of(context);
     final issue = issueById(_issueId!);
-    final technician = nearestAvailable(
+    final technician = model.nearestAvailable(
       city: model.city,
       categoryIds: issue.categoryIds,
     );
@@ -75,6 +81,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       phone: _phone.text,
       whenLabel: 'فوراً',
       assignNow: technician != null,
+      clientId: session.id,
+      clientName: session.name,
     );
     setState(() => _request = request);
   }
@@ -268,7 +276,8 @@ class _EmergencyResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final technician = findTechnician(request.technicianId);
+    final technician = AppScope.of(context)
+        .technicianById(request.technicianId);
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
       child: Column(

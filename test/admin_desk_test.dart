@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
 import 'package:servick/data/admin.dart';
-import 'package:servick/data/catalog.dart';
 import 'package:servick/data/client_plans.dart';
+
+import 'support/accounts.dart';
 import 'package:servick/main.dart';
 import 'package:servick/routes.dart';
 
@@ -12,19 +13,27 @@ void main() {
     'the owner edits prices, messages people, and issues a trial invoice',
     () {
       final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
-      final fahd = findTechnician('p-km-1')!;
+      final account = seedProvider(
+        model,
+        name: 'فهد سعيد الشهري',
+        phone: '0554102201',
+        city: 'خميس مشيط',
+        categoryId: 'petrol',
+        active: true,
+      );
+      final fahd = model.technicianById(account.technicianId)!;
 
-      expect(model.startingPriceOf(fahd), 80);
+      expect(model.startingPriceOf(fahd), 0);
       expect(
         model.updateStartingPrice(technicianId: 'missing', raw: '90'),
         'الفني غير موجود',
       );
       expect(
-        model.updateStartingPrice(technicianId: 'p-km-1', raw: 'abc'),
+        model.updateStartingPrice(technicianId: fahd.id, raw: 'abc'),
         'أدخل سعراً صحيحاً من 0 إلى 9999',
       );
       expect(
-        model.updateStartingPrice(technicianId: 'p-km-1', raw: '95'),
+        model.updateStartingPrice(technicianId: fahd.id, raw: '95'),
         isNull,
       );
       expect(model.startingPriceOf(fahd), 95);
@@ -32,7 +41,7 @@ void main() {
       expect(
         model.sendDeskMessage(
           audience: 'provider',
-          recipientId: 'prov-p-km-1',
+          recipientId: account.id,
           body: '   ',
         ),
         'اكتب نص الرسالة',
@@ -40,24 +49,21 @@ void main() {
       expect(
         model.sendDeskMessage(
           audience: 'provider',
-          recipientId: 'prov-p-km-1',
+          recipientId: account.id,
           body: ' تم اعتماد ظهورك في خميس مشيط ',
         ),
         isNull,
       );
       expect(
         model
-            .messagesFor(audience: 'provider', recipientId: 'prov-p-km-1')
+            .messagesFor(audience: 'provider', recipientId: account.id)
             .single
             .body,
         'تم اعتماد ظهورك في خميس مشيط',
       );
+      final client = seedClient(model, name: demoClientName, phone: '0552223344');
       expect(model.deskRecipients('client').map((item) => item.name), [
-        demoClientName,
-        'أبو محمد',
-        'أم سارة',
-        'أبو فيصل',
-        'أبو ناصر',
+        client.name,
       ]);
 
       expect(
@@ -93,7 +99,7 @@ void main() {
       expect(model.invoices.single.partyName, demoClientName);
       expect(model.billing.nextNumber, 1042);
 
-      expect(model.renewSubscription('prov-p-km-1'), isNotNull);
+      expect(model.renewSubscription(account.id), isNotNull);
       expect(model.invoices.first.amount, 550);
       expect(model.invoices.first.title, 'اشتراك الحرفي السنوي');
     },
@@ -108,6 +114,14 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
+    final account = seedProvider(
+      model,
+      name: 'فهد سعيد الشهري',
+      phone: '0554102201',
+      city: 'خميس مشيط',
+      categoryId: 'petrol',
+      active: true,
+    );
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
 
@@ -131,14 +145,21 @@ void main() {
     expect(find.text('مراسلة مزودي الخدمة والعملاء'), findsOneWidget);
     expect(find.text('نظام الفوترة'), findsOneWidget);
 
-    await tester.ensureVisible(find.byKey(const Key('price-field-p-km-1')));
-    await tester.enterText(find.byKey(const Key('price-field-p-km-1')), '95');
-    await tester.ensureVisible(find.byKey(const Key('save-price-p-km-1')));
-    await tester.tap(find.byKey(const Key('save-price-p-km-1')));
+    await tester.ensureVisible(
+      find.byKey(Key('price-field-${account.technicianId}')),
+    );
+    await tester.enterText(
+      find.byKey(Key('price-field-${account.technicianId}')),
+      '95',
+    );
+    await tester.ensureVisible(
+      find.byKey(Key('save-price-${account.technicianId}')),
+    );
+    await tester.tap(find.byKey(Key('save-price-${account.technicianId}')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('تم تحديث سعر البداية'), findsOneWidget);
-    expect(model.startingPriceOf(findTechnician('p-km-1')!), 95);
+    expect(model.startingPriceOf(model.technicianById(account.technicianId)!), 95);
 
     await tester.ensureVisible(find.byKey(const Key('message-body')));
     await tester.enterText(

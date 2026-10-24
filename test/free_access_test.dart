@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
 import 'package:servick/data/admin.dart';
 import 'package:servick/data/format.dart';
-import 'package:servick/data/providers.dart';
 import 'package:servick/main.dart';
+
+import 'support/accounts.dart';
 import 'package:servick/models/desk.dart';
 import 'package:servick/models/provider.dart';
 
@@ -14,11 +15,20 @@ void main() {
     () {
       var clock = DateTime.utc(2026, 10, 23, 12);
       final model = AppModel(now: () => clock);
-      final unpaid = model.providers.firstWhere(
-        (account) => account.id == 'prov-d-ab-1',
+      final unpaid = seedProvider(
+        model,
+        name: 'حرفي غير مشترك',
+        phone: '0554102206',
+        city: 'أبها',
+        categoryId: 'diesel',
       );
-      final paid = model.providers.firstWhere(
-        (account) => account.id == 'prov-p-km-1',
+      final paid = seedProvider(
+        model,
+        name: 'حرفي مشترك',
+        phone: '0554102201',
+        city: 'خميس مشيط',
+        categoryId: 'petrol',
+        active: true,
       );
 
       expect(
@@ -49,23 +59,23 @@ void main() {
       expect(
         model.loginProvider(
           phone: '0554102206',
-          password: demoProviderPassword,
+          password: fixturePassword,
         ),
         isA<ProviderLoginSuccess>(),
       );
 
       clock = providerEnd.subtract(const Duration(days: 7));
       expect(
-        model.providerComplimentaryPhase(model.providerById('prov-d-ab-1')!),
+        model.providerComplimentaryPhase(model.providerById(unpaid.id)!),
         ComplimentaryPhase.warning,
       );
       model.ensureComplimentaryNotice(
         audience: 'provider',
-        recipientId: 'prov-d-ab-1',
+        recipientId: unpaid.id,
       );
       expect(
         model
-            .messagesFor(audience: 'provider', recipientId: 'prov-d-ab-1')
+            .messagesFor(audience: 'provider', recipientId: unpaid.id)
             .single
             .body,
         complimentaryWarningText,
@@ -73,13 +83,13 @@ void main() {
 
       clock = providerEnd;
       expect(
-        model.providerComplimentaryPhase(model.providerById('prov-d-ab-1')!),
+        model.providerComplimentaryPhase(model.providerById(unpaid.id)!),
         ComplimentaryPhase.ended,
       );
       expect(
         model.loginProvider(
           phone: '0554102206',
-          password: demoProviderPassword,
+          password: fixturePassword,
         ),
         isA<ProviderFreePeriodEnded>(),
       );

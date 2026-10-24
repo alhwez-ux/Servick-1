@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/matching.dart';
+import '../app_scope.dart';
 import '../models/models.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
@@ -14,8 +14,9 @@ class CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = technicianCount(categoryId: category.id, city: city);
-    final open = technicianCount(
+    final model = AppScope.of(context);
+    final total = model.technicianCount(categoryId: category.id, city: city);
+    final open = model.technicianCount(
       categoryId: category.id,
       city: city,
       availableOnly: true,

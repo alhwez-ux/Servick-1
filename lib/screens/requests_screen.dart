@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
-import '../data/catalog.dart';
 import '../data/format.dart';
 import '../models/models.dart';
 import '../routes.dart';
@@ -74,7 +73,8 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final technician = findTechnician(request.technicianId);
+    final technician = AppScope.of(context)
+        .technicianById(request.technicianId);
     final statusColor = switch (request.status) {
       RequestStatus.assigned => ServickColors.success,
       RequestStatus.waiting => ServickColors.waiting,

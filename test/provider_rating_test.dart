@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
-import 'package:servick/data/catalog.dart';
 import 'package:servick/main.dart';
+
+import 'support/accounts.dart';
 import 'package:servick/models/models.dart';
 
 void main() {
   test('a customer rating updates the craftsman average once', () {
     final now = DateTime.utc(2026, 10, 23, 12);
     final model = AppModel(now: () => now);
-    final fahd = findTechnician('p-km-1')!;
+    final account = seedProvider(
+      model,
+      name: 'فهد سعيد الشهري',
+      phone: '0554102201',
+      city: 'خميس مشيط',
+      categoryId: 'petrol',
+      active: true,
+    );
+    final fahd = model.technicianById(account.technicianId)!;
 
     final waiting = model.submit(
       kind: RequestKind.booking,
@@ -20,7 +29,7 @@ void main() {
       phone: '0551111111',
       whenLabel: 'اليوم',
       assignNow: false,
-      technicianId: 'p-km-1',
+      technicianId: fahd.id,
     );
     expect(
       model.submitRating(requestId: waiting.id, stars: 5, comment: 'جيد'),
@@ -79,6 +88,15 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
+    seedClient(model, signIn: true);
+    seedProvider(
+      model,
+      name: 'بدر محمد الشهري',
+      phone: '0554102211',
+      city: 'خميس مشيط',
+      categoryId: 'auto_elec',
+      active: true,
+    );
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
 
@@ -133,7 +151,7 @@ void main() {
     expect(find.byKey(const Key('latest-review-text')), findsOneWidget);
     expect(find.text('وصل بسرعة وصلح البطارية'), findsOneWidget);
     expect(find.text('5 من 5'), findsWidgets);
-    final badr = findTechnician(model.requests.first.technicianId)!;
+    final badr = model.technicianById(model.requests.first.technicianId)!;
     expect(model.displayJobs(badr), badr.jobs + 1);
   });
 }

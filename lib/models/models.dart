@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../data/password_hash.dart';
+
 const cities = <String>['خميس مشيط', 'أبها', 'أحد رفيدة'];
 
 enum RequestKind { emergency, booking }
@@ -140,12 +142,14 @@ class ServiceRequest {
     required this.createdAt,
     required this.status,
     this.technicianId,
+    this.clientId,
   });
 
   final String id;
   final RequestKind kind;
   final String categoryId;
   final String? technicianId;
+  final String? clientId;
   final String city;
   final String summary;
   final String details;
@@ -160,6 +164,7 @@ class ServiceRequest {
       kind: kind,
       categoryId: categoryId,
       technicianId: technicianId ?? this.technicianId,
+      clientId: clientId,
       city: city,
       summary: summary,
       details: details,
@@ -169,6 +174,50 @@ class ServiceRequest {
       status: status ?? this.status,
     );
   }
+}
+
+class ClientAccount {
+  const ClientAccount({
+    required this.id,
+    required this.name,
+    required this.phone,
+    required this.city,
+    required this.passwordHash,
+    required this.passwordSalt,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String phone;
+  final String city;
+  final String passwordHash;
+  final String passwordSalt;
+  final DateTime createdAt;
+
+  bool matchesPassword(String raw) {
+    return hashPassword(raw, passwordSalt) == passwordHash;
+  }
+}
+
+class AccountDeletionRequest {
+  const AccountDeletionRequest({
+    required this.id,
+    required this.audience,
+    required this.accountId,
+    required this.accountName,
+    required this.phone,
+    required this.createdAt,
+    required this.status,
+  });
+
+  final String id;
+  final String audience;
+  final String accountId;
+  final String accountName;
+  final String phone;
+  final DateTime createdAt;
+  final String status;
 }
 
 class RequestRouteArgs {

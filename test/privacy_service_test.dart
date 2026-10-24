@@ -122,7 +122,7 @@ void main() {
     );
     await tester.enterText(
       find.byKey(const Key('provider-password')),
-      demoProviderPassword,
+      '123456',
     );
     await tester.ensureVisible(find.byKey(const Key('provider-login')));
     await tester.tap(find.byKey(const Key('provider-login')));

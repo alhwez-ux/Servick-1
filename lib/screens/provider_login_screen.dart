@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
-import '../data/catalog.dart';
-import '../data/providers.dart';
 import '../models/provider.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
@@ -156,7 +154,6 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final model = AppScope.of(context);
     return ServickScaffold(
       title: 'دخول مزودي الخدمات',
       showCity: false,
@@ -289,37 +286,23 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                           : const Text('تسجيل الدخول'),
                     ),
                   ),
-                  const SizedBox(height: 28),
-                  const Text(
-                    'حسابات تجريبية',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    key: const Key('open-provider-register'),
+                    onPressed: () {
+                      Navigator.of(context)
+                          .pushNamed(ServickRoutes.providerRegister);
+                    },
+                    child: const Text('إنشاء حساب حرفي'),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'كلمة المرور: $demoProviderPassword. السداد هنا تجريبي ولا يخصم مبلغاً.',
-                    style: const TextStyle(
+                  const SizedBox(height: 8),
+                  const Text(
+                    'لا توجد حسابات تجريبية. الحساب الجديد يُحفظ على الويب، ويظهر للمالك لتفعيله. السداد هنا لا يخصم مبلغاً.',
+                    style: TextStyle(
                       color: ServickColors.muted,
                       fontSize: 12,
                       height: 1.5,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final account in model.providers)
-                        ActionChip(
-                          key: Key('demo-${account.id}'),
-                          label: Text(_demoLabel(account, model.now)),
-                          onPressed: () {
-                            setState(() {
-                              _phoneController.text = account.phone;
-                              _passwordController.text = account.password;
-                            });
-                          },
-                        ),
-                    ],
                   ),
                 ],
               ),
@@ -328,12 +311,5 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
         ),
       ),
     );
-  }
-
-  String _demoLabel(ProviderAccount account, DateTime now) {
-    final technician = findTechnician(account.technicianId);
-    final name = technician?.name ?? account.phone;
-    final status = account.isSubscribedAt(now) ? 'ساري' : 'منتهي';
-    return '$name · $status';
   }
 }

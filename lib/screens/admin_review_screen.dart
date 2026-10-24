@@ -55,7 +55,7 @@ class _AdminReviewScreenState extends State<AdminReviewScreen> {
               const SectionTitle('دليل الفنيين'),
               const SizedBox(height: 6),
               Text(
-                '${technicians.length} فنياً في المدن الثلاث. المس أي اسم لفتح صفحته.',
+                '${model.technicians.length} فنياً مسجّلين. المس أي اسم لفتح صفحته.',
                 key: const Key('review-providers'),
                 style: const TextStyle(color: ServickColors.muted, height: 1.5),
               ),
@@ -69,7 +69,7 @@ class _AdminReviewScreenState extends State<AdminReviewScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                for (final technician in technicians)
+                for (final technician in model.technicians)
                   if (technician.city == city) ...[
                     _TechnicianDetail(technician: technician),
                     const SizedBox(height: 8),
@@ -80,7 +80,7 @@ class _AdminReviewScreenState extends State<AdminReviewScreen> {
               const SectionTitle('الطلبات'),
               const SizedBox(height: 6),
               Text(
-                '${model.orderCount} طلباً محفوظاً في هذه الجلسة.',
+                '${model.orderCount} طلباً محفوظاً على الويب.',
                 key: const Key('review-orders'),
                 style: const TextStyle(color: ServickColors.muted, height: 1.5),
               ),
@@ -520,6 +520,16 @@ class _SuggestionCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(suggestion.text, style: const TextStyle(height: 1.5)),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              key: Key('delete-suggestion-${suggestion.id}'),
+              onPressed: () {
+                AppScope.of(context).removeOwnerSuggestion(suggestion.id);
+              },
+              child: const Text('حذف الاقتراح'),
+            ),
+          ),
         ],
       ),
     );

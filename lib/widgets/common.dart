@@ -26,7 +26,7 @@ class DemoNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Text(
-      'الطلب والاشتراك يبقيان على هذا الجهاز خلال الجلسة، والدفع محاكاة.',
+      'الحسابات والطلبات تُحفظ على الويب وتظهر من أي جهاز. لا تُحذف إلا من المالك، أو بطلب صاحب الحساب بعد موافقة المالك. الدفع محاكاة.',
       textAlign: TextAlign.center,
       style: TextStyle(color: ServickColors.muted, fontSize: 12, height: 1.6),
     );

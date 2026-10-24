@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'data/admin.dart';
 import 'data/catalog.dart';
-import 'data/orders.dart';
+import 'data/matching.dart' as matching;
 import 'data/order_categories.dart';
+import 'data/password_hash.dart';
 import 'data/phone.dart';
 import 'data/providers.dart';
 import 'data/service_pictures.dart';
+import 'data/shared_snapshot.dart';
+import 'data/shared_store.dart';
 import 'data/client_plans.dart';
 import 'models/client_subscription.dart';
 import 'models/desk.dart';
@@ -19,22 +22,30 @@ class AppModel extends ChangeNotifier {
     DateTime Function()? now,
     String? city,
     List<ProviderAccount>? providers,
+    List<Technician>? technicians,
     List<ServiceOrder>? orders,
+    SharedStore? store,
   }) : _now = now ?? DateTime.now,
        _city = city ?? cities.first,
-       _providers = List<ProviderAccount>.from(
-         providers ?? demoProviders((now ?? DateTime.now)()),
-       ),
-       _orders = List<ServiceOrder>.from(
-         orders ?? demoOrders((now ?? DateTime.now)()),
-       );
+       _providers = List<ProviderAccount>.from(providers ?? const []),
+       _technicians = List<Technician>.from(technicians ?? const []),
+       _orders = List<ServiceOrder>.from(orders ?? const []),
+       _store = store ?? MemorySharedStore();
 
   final DateTime Function() _now;
+  final SharedStore _store;
+  SharedSnapshot _base = SharedSnapshot.empty();
+  Future<void>? _saveChain;
+  String? syncError;
   String _city;
   final List<ServiceRequest> requests = [];
   final List<ProviderAccount> _providers;
+  final List<Technician> _technicians;
+  final List<ClientAccount> _clientAccounts = [];
   final List<ServiceOrder> _orders;
+  final List<AccountDeletionRequest> _deletionRequests = [];
   ProviderAccount? _session;
+  ClientAccount? _clientSession;
   final Map<String, ClientSubscription> _clients = {};
   final List<ProviderRating> _ratings = [];
   final List<OwnerSuggestion> _suggestions = [];
@@ -54,6 +65,10 @@ class AppModel extends ChangeNotifier {
   int _suggestionSequence = 0;
   int _messageSequence = 0;
   int _serviceSequence = 0;
+  int _clientSequence = 0;
+  int _providerSequence = 0;
+  int _technicianSequence = 0;
+  int _deletionSequence = 0;
   bool _adminUnlocked = false;
   bool _clientPrivacyAccepted = false;
   bool _providerPrivacyAccepted = false;
@@ -109,25 +124,27 @@ class AppModel extends ChangeNotifier {
           DeskRecipient(
             id: account.id,
             audience: 'provider',
-            name: findTechnician(account.technicianId)?.name ?? 'حرفي بدون اسم',
+            name: technicianById(account.technicianId)?.name ?? 'حرفي بدون اسم',
             detail: account.phone,
           ),
       ];
     }
     final recipients = <DeskRecipient>[
-      const DeskRecipient(
-        id: demoClientId,
-        audience: 'client',
-        name: demoClientName,
-        detail: 'العميل الحالي في الجلسة',
-      ),
+      for (final account in _clientAccounts)
+        DeskRecipient(
+          id: account.id,
+          audience: 'client',
+          name: account.name,
+          detail: account.phone,
+        ),
     ];
-    final seen = <String>{demoClientName};
+    final seen = {for (final account in _clientAccounts) account.id};
     for (final order in _orders) {
-      if (!seen.add(order.clientName)) continue;
+      final id = order.clientId;
+      if (id == null || !seen.add(id)) continue;
       recipients.add(
         DeskRecipient(
-          id: 'client-name-${order.clientName}',
+          id: id,
           audience: 'client',
           name: order.clientName,
           detail: order.city,
@@ -145,6 +162,19 @@ class AppModel extends ChangeNotifier {
 
   ProviderAccount? get providerSession => _session;
 
+  ClientAccount? get clientSession => _clientSession;
+
+  List<ClientAccount> get clientAccounts => List.unmodifiable(_clientAccounts);
+
+  List<Technician> get technicians => List.unmodifiable(_technicians);
+
+  List<AccountDeletionRequest> get deletionRequests =>
+      List.unmodifiable(_deletionRequests);
+
+  List<AccountDeletionRequest> get pendingDeletions => _deletionRequests
+      .where((request) => request.status == 'pending')
+      .toList();
+
   bool get adminUnlocked => _adminUnlocked;
 
   bool get clientPrivacyAccepted => _clientPrivacyAccepted;
@@ -158,6 +188,76 @@ class AppModel extends ChangeNotifier {
 
   List<ServiceCategory> get addedServices =>
       List.unmodifiable(_extraCategories);
+
+  List<Technician> get listedTechnicians => [
+    for (final technician in _technicians)
+      if (_isListed(technician)) technician,
+  ];
+
+  Technician? technicianById(String? id) => lookupTechnician(id, _technicians);
+
+  List<Technician> techniciansFor({
+    required String categoryId,
+    required String city,
+    matching.TechnicianSort order = matching.TechnicianSort.nearest,
+  }) {
+    return matching.techniciansFor(
+      people: listedTechnicians,
+      categoryId: categoryId,
+      city: city,
+      order: order,
+      ratingOf: displayRating,
+    );
+  }
+
+  int technicianCount({
+    required String categoryId,
+    required String city,
+    bool availableOnly = false,
+  }) {
+    return matching.technicianCount(
+      people: listedTechnicians,
+      categoryId: categoryId,
+      city: city,
+      availableOnly: availableOnly,
+    );
+  }
+
+  List<Technician> availableInCity(String city) {
+    return matching.availableInCity(listedTechnicians, city);
+  }
+
+  Technician? nearestAvailable({
+    required String city,
+    required List<String> categoryIds,
+  }) {
+    return matching.nearestAvailable(
+      people: listedTechnicians,
+      city: city,
+      categoryIds: categoryIds,
+    );
+  }
+
+  List<({String city, int count})> otherCitiesWithTechnicians({
+    required String categoryId,
+    required String currentCity,
+  }) {
+    return matching.otherCitiesWithTechnicians(
+      people: listedTechnicians,
+      categoryId: categoryId,
+      currentCity: currentCity,
+    );
+  }
+
+  bool _isListed(Technician technician) {
+    if (!technician.available) return false;
+    final account = providerByTechnician(technician.id);
+    if (account == null) return false;
+    if (account.isSubscribedAt(_now())) return true;
+    final phase = providerComplimentaryPhase(account);
+    return phase == ComplimentaryPhase.open ||
+        phase == ComplimentaryPhase.warning;
+  }
 
   ServiceCategory? categoryOf(String id) {
     for (final category in serviceCategories) {
@@ -188,7 +288,7 @@ class AppModel extends ChangeNotifier {
     );
     if (duplicate) return 'هذه الخدمة موجودة';
     final cleanSubtitle = subtitle.trim().isEmpty
-        ? 'خدمة أضافها المالك خلال الجلسة'
+        ? 'خدمة أضافها المالك'
         : subtitle.trim();
     if (cleanSubtitle.length > serviceSubtitleMaxLength) {
       return 'الوصف أطول من ثمانين حرفاً';
@@ -220,14 +320,27 @@ class AppModel extends ChangeNotifier {
         imageAsset: picture.asset,
       ),
     );
-    notifyListeners();
+    _touch();
+    return null;
+  }
+
+  String? removeService(String id) {
+    if (categories.any((category) => category.id == id)) {
+      return 'لا يمكن حذف الخدمات الأساسية';
+    }
+    final removed = _extraCategories.length;
+    _extraCategories.removeWhere((category) => category.id == id);
+    if (_extraCategories.length == removed) return 'الخدمة غير موجودة';
+    _touch();
     return null;
   }
 
   void unlockAdmin() {
-    if (_adminUnlocked) return;
-    _adminUnlocked = true;
-    notifyListeners();
+    if (!_adminUnlocked) {
+      _adminUnlocked = true;
+      notifyListeners();
+    }
+    _enqueue(_refresh);
   }
 
   ClientSubscription? clientSubscription(String clientId) => _clients[clientId];
@@ -255,6 +368,8 @@ class AppModel extends ChangeNotifier {
     required String whenLabel,
     required bool assignNow,
     String? technicianId,
+    String? clientId,
+    String clientName = 'عميل Servick',
   }) {
     final normalized = normalizeSaudiMobile(phone);
     assert(
@@ -267,6 +382,7 @@ class AppModel extends ChangeNotifier {
       kind: kind,
       categoryId: categoryId,
       technicianId: technicianId,
+      clientId: clientId,
       city: city,
       summary: summary.trim(),
       details: details.trim(),
@@ -281,8 +397,9 @@ class AppModel extends ChangeNotifier {
         0,
         ServiceOrder(
           id: 'ord-${request.id}',
-          clientName: 'عميل Servick',
-          serviceTitle: categoryById(categoryId).title,
+          clientId: clientId,
+          clientName: clientName,
+          serviceTitle: categoryOf(categoryId)?.title ?? categoryId,
           notes: request.details.isEmpty ? request.summary : request.details,
           city: city,
           createdAt: request.createdAt,
@@ -291,7 +408,7 @@ class AppModel extends ChangeNotifier {
         ),
       );
     }
-    notifyListeners();
+    _touch();
     return request;
   }
 
@@ -324,7 +441,7 @@ class AppModel extends ChangeNotifier {
         status: 'pending',
       ),
     );
-    notifyListeners();
+    _touch();
     return null;
   }
 
@@ -346,7 +463,7 @@ class AppModel extends ChangeNotifier {
     if (requestId != null) {
       acceptRequest(requestId: requestId, technicianId: account.technicianId);
     }
-    notifyListeners();
+    _touch();
     return null;
   }
 
@@ -365,7 +482,7 @@ class AppModel extends ChangeNotifier {
     if (account == null) {
       return const ProviderLoginFailure('رقم الجوال غير مسجل كمزود خدمة');
     }
-    if (account.password != password) {
+    if (!account.matchesPassword(password)) {
       return const ProviderLoginFailure('كلمة المرور غير صحيحة');
     }
     if (!account.isSubscribedAt(_now())) {
@@ -403,13 +520,13 @@ class AppModel extends ChangeNotifier {
     );
     _providers[index] = renewed;
     _session = renewed;
-    final technician = findTechnician(renewed.technicianId);
+    final technician = technicianById(renewed.technicianId);
     _issueInvoice(
       partyName: technician?.name ?? 'مزود الخدمة',
       title: 'اشتراك الحرفي السنوي',
       amount: providerAnnualFee,
     );
-    notifyListeners();
+    _touch();
     return renewed;
   }
 
@@ -417,13 +534,13 @@ class AppModel extends ChangeNotifier {
     required String technicianId,
     required String raw,
   }) {
-    if (findTechnician(technicianId) == null) return 'الفني غير موجود';
+    if (technicianById(technicianId) == null) return 'الفني غير موجود';
     final amount = int.tryParse(raw.trim());
     if (amount == null || amount < 0 || amount > 9999) {
       return 'أدخل سعراً صحيحاً من 0 إلى 9999';
     }
     _startingPrices[technicianId] = amount;
-    notifyListeners();
+    _touch();
     return null;
   }
 
@@ -470,7 +587,7 @@ class AppModel extends ChangeNotifier {
       providerFreeAnchor: _billing.providerFreeAnchor,
       clientFreeAnchor: _billing.clientFreeAnchor,
     );
-    notifyListeners();
+    _touch();
     return null;
   }
 
@@ -501,7 +618,15 @@ class AppModel extends ChangeNotifier {
         createdAt: _now(),
       ),
     );
-    notifyListeners();
+    _touch();
+    return null;
+  }
+
+  String? removeDeskMessage(String id) {
+    final removed = _messages.length;
+    _messages.removeWhere((message) => message.id == id);
+    if (_messages.length == removed) return 'الرسالة غير موجودة';
+    _touch();
     return null;
   }
 
@@ -540,7 +665,15 @@ class AppModel extends ChangeNotifier {
         createdAt: _now(),
       ),
     );
-    notifyListeners();
+    _touch();
+    return null;
+  }
+
+  String? removeOwnerSuggestion(String id) {
+    final removed = _suggestions.length;
+    _suggestions.removeWhere((suggestion) => suggestion.id == id);
+    if (_suggestions.length == removed) return 'الاقتراح غير موجود';
+    _touch();
     return null;
   }
 
@@ -555,12 +688,12 @@ class AppModel extends ChangeNotifier {
     );
     _providers[index] = activated;
     if (_session?.id == providerId) _session = activated;
-    notifyListeners();
+    _touch();
     return null;
   }
 
   List<ServiceRequest> jobsFor(ProviderAccount account) {
-    final technician = findTechnician(account.technicianId);
+    final technician = technicianById(account.technicianId);
     return requests.where((request) {
       if (request.technicianId == account.technicianId) return true;
       if (request.technicianId != null || technician == null) return false;
@@ -585,7 +718,7 @@ class AppModel extends ChangeNotifier {
       technicianId: technicianId,
       status: RequestStatus.assigned,
     );
-    notifyListeners();
+    _touch();
     return true;
   }
 
@@ -662,7 +795,7 @@ class AppModel extends ChangeNotifier {
         createdAt: _now(),
       ),
     );
-    notifyListeners();
+    _touch();
     return null;
   }
 
@@ -676,7 +809,7 @@ class AppModel extends ChangeNotifier {
     if (request.technicianId != technicianId) return false;
     if (request.status != RequestStatus.assigned) return false;
     requests[index] = request.copyWith(status: RequestStatus.completed);
-    notifyListeners();
+    _touch();
     return true;
   }
 
@@ -764,7 +897,7 @@ class AppModel extends ChangeNotifier {
       providerFreeAnchor: providerAnchor,
       clientFreeAnchor: clientAnchor,
     );
-    notifyListeners();
+    _touch();
     return null;
   }
 
@@ -784,11 +917,10 @@ class AppModel extends ChangeNotifier {
     final id = 'free-warn-$audience-$recipientId';
     if (_messages.any((message) => message.id == id)) return;
     final name = audience == 'provider'
-        ? findTechnician(providerById(recipientId)?.technicianId)?.name ??
+        ? technicianById(providerById(recipientId)?.technicianId)?.name ??
               'مقدم الخدمة'
-        : recipientId == demoClientId
-        ? demoClientName
-        : 'العميل';
+        : clientById(recipientId)?.name ??
+              (recipientId == demoClientId ? demoClientName : 'العميل');
     _messages.insert(
       0,
       DeskMessage(
@@ -800,7 +932,7 @@ class AppModel extends ChangeNotifier {
         createdAt: _now(),
       ),
     );
-    notifyListeners();
+    _touch();
   }
 
   String? subscribeClient({
@@ -821,12 +953,505 @@ class AppModel extends ChangeNotifier {
       expiry: expiry,
     );
     _issueInvoice(
-      partyName: clientId == demoClientId ? demoClientName : clientId,
+      partyName: _clientLabel(clientId),
       title: plan.title,
       amount: planPriceOf(plan.id),
     );
+    _touch();
+    return null;
+  }
+
+  String _clientLabel(String clientId) {
+    return clientById(clientId)?.name ??
+        (clientId == demoClientId ? demoClientName : clientId);
+  }
+
+  ClientAccount? clientById(String id) {
+    for (final account in _clientAccounts) {
+      if (account.id == id) return account;
+    }
+    return null;
+  }
+
+  ClientAccount? clientByPhone(String phone) {
+    final normalized = normalizeSaudiMobile(phone);
+    for (final account in _clientAccounts) {
+      if (account.phone == normalized) return account;
+    }
+    return null;
+  }
+
+  ProviderAccount? providerByPhone(String phone) {
+    final normalized = normalizeSaudiMobile(phone);
+    for (final account in _providers) {
+      if (account.phone == normalized) return account;
+    }
+    return null;
+  }
+
+  ProviderAccount? providerByTechnician(String technicianId) {
+    for (final account in _providers) {
+      if (account.technicianId == technicianId) return account;
+    }
+    return null;
+  }
+
+  bool _phoneTaken(String phone) {
+    return clientByPhone(phone) != null || providerByPhone(phone) != null;
+  }
+
+  String? registerClient({
+    required String name,
+    required String phone,
+    required String city,
+    required String password,
+  }) {
+    final cleanName = name.trim();
+    if (cleanName.isEmpty) return 'اكتب الاسم';
+    if (cleanName.length > 40) return 'الاسم أطول من أربعين حرفاً';
+    final phoneError = validateSaudiMobile(phone);
+    if (phoneError != null) return phoneError;
+    if (!cities.contains(city)) return 'المدينة غير معروفة';
+    if (password.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final normalized = normalizeSaudiMobile(phone);
+    if (_phoneTaken(normalized)) return 'هذا الجوال مسجّل من قبل';
+    _clientSequence += 1;
+    final salt = newSalt();
+    _clientAccounts.add(
+      ClientAccount(
+        id: 'client-$_clientSequence',
+        name: cleanName,
+        phone: normalized,
+        city: city,
+        passwordHash: hashPassword(password.trim(), salt),
+        passwordSalt: salt,
+        createdAt: _now(),
+      ),
+    );
+    _touch();
+    return null;
+  }
+
+  String? loginClient({required String phone, required String password}) {
+    final account = clientByPhone(phone);
+    if (account == null) return 'رقم الجوال غير مسجّل';
+    if (!account.matchesPassword(password)) return 'كلمة المرور غير صحيحة';
+    _clientSession = account;
+    if (cities.contains(account.city)) _city = account.city;
     notifyListeners();
     return null;
+  }
+
+  void logoutClient() {
+    if (_clientSession == null) return;
+    _clientSession = null;
+    notifyListeners();
+  }
+
+  String? registerProvider({
+    required String name,
+    required String phone,
+    required String city,
+    required String categoryId,
+    required String password,
+    String about = '',
+  }) {
+    final cleanName = name.trim();
+    if (cleanName.isEmpty) return 'اكتب الاسم';
+    if (cleanName.length > 40) return 'الاسم أطول من أربعين حرفاً';
+    final phoneError = validateSaudiMobile(phone);
+    if (phoneError != null) return phoneError;
+    if (!cities.contains(city)) return 'المدينة غير معروفة';
+    if (categoryOf(categoryId) == null) return 'نوع الخدمة غير معروف';
+    if (password.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final normalized = normalizeSaudiMobile(phone);
+    if (_phoneTaken(normalized)) return 'هذا الجوال مسجّل من قبل';
+    _providerSequence += 1;
+    _technicianSequence += 1;
+    final salt = newSalt();
+    final technicianId = 'tech-$_technicianSequence';
+    _technicians.add(
+      Technician(
+        id: technicianId,
+        name: cleanName,
+        categoryId: categoryId,
+        city: city,
+        rating: 0,
+        jobs: 0,
+        years: 0,
+        available: true,
+        etaMinutes: 30,
+        startingPrice: 0,
+        phone: normalized,
+        about: about.trim().isEmpty ? 'حرفي مسجّل في سيرفيسك' : about.trim(),
+        services: const [],
+        review: const CustomerReview(
+          author: 'سيرفيسك',
+          text: 'لا توجد تقييمات بعد.',
+        ),
+      ),
+    );
+    _providers.add(
+      ProviderAccount(
+        id: 'prov-$_providerSequence',
+        technicianId: technicianId,
+        phone: normalized,
+        passwordHash: hashPassword(password.trim(), salt),
+        passwordSalt: salt,
+        subscriptionStatus: 'expired',
+        subscriptionExpiry: _now().subtract(const Duration(days: 1)),
+      ),
+    );
+    _touch();
+    return null;
+  }
+
+  AccountDeletionRequest? deletionRequestFor({
+    required String audience,
+    required String accountId,
+  }) {
+    for (final request in _deletionRequests) {
+      if (request.audience == audience &&
+          request.accountId == accountId &&
+          request.status == 'pending') {
+        return request;
+      }
+    }
+    return null;
+  }
+
+  String? requestAccountDeletion({
+    required String audience,
+    required String accountId,
+  }) {
+    if (deletionRequestFor(audience: audience, accountId: accountId) != null) {
+      return 'طلب حذف الحساب بانتظار موافقة المالك';
+    }
+    final String name;
+    final String phone;
+    if (audience == 'provider') {
+      final account = providerById(accountId);
+      if (account == null) return 'الحساب غير موجود';
+      name = technicianById(account.technicianId)?.name ?? account.phone;
+      phone = account.phone;
+    } else if (audience == 'client') {
+      final account = clientById(accountId);
+      if (account == null) return 'الحساب غير موجود';
+      name = account.name;
+      phone = account.phone;
+    } else {
+      return 'نوع الحساب غير معروف';
+    }
+    _deletionSequence += 1;
+    _deletionRequests.insert(
+      0,
+      AccountDeletionRequest(
+        id: 'del-$_deletionSequence',
+        audience: audience,
+        accountId: accountId,
+        accountName: name,
+        phone: phone,
+        createdAt: _now(),
+        status: 'pending',
+      ),
+    );
+    _touch();
+    return null;
+  }
+
+  String? rejectAccountDeletion(String requestId) {
+    final index = _deletionRequests.indexWhere(
+      (request) => request.id == requestId,
+    );
+    if (index < 0) return 'طلب الحذف غير موجود';
+    final request = _deletionRequests[index];
+    if (request.status != 'pending') return 'الطلب ليس بانتظار الموافقة';
+    _deletionRequests[index] = AccountDeletionRequest(
+      id: request.id,
+      audience: request.audience,
+      accountId: request.accountId,
+      accountName: request.accountName,
+      phone: request.phone,
+      createdAt: request.createdAt,
+      status: 'rejected',
+    );
+    _touch();
+    return null;
+  }
+
+  String? approveAccountDeletion(String requestId) {
+    AccountDeletionRequest? request;
+    for (final candidate in _deletionRequests) {
+      if (candidate.id == requestId) {
+        request = candidate;
+        break;
+      }
+    }
+    if (request == null) return 'طلب الحذف غير موجود';
+    if (request.status != 'pending') return 'الطلب ليس بانتظار الموافقة';
+    final error = _removeAccount(
+      audience: request.audience,
+      accountId: request.accountId,
+    );
+    if (error != null) return error;
+    _deletionRequests.removeWhere(
+      (candidate) =>
+          candidate.audience == request!.audience &&
+          candidate.accountId == request.accountId,
+    );
+    _touch();
+    return null;
+  }
+
+  String? deleteAccount({required String audience, required String accountId}) {
+    final error = _removeAccount(audience: audience, accountId: accountId);
+    if (error != null) return error;
+    _deletionRequests.removeWhere(
+      (request) =>
+          request.audience == audience && request.accountId == accountId,
+    );
+    _touch();
+    return null;
+  }
+
+  String? _removeAccount({
+    required String audience,
+    required String accountId,
+  }) {
+    if (audience == 'provider') {
+      final account = providerById(accountId);
+      if (account == null) return 'الحساب غير موجود';
+      _providers.removeWhere((item) => item.id == accountId);
+      _technicians.removeWhere((item) => item.id == account.technicianId);
+      _startingPrices.remove(account.technicianId);
+      _messages.removeWhere(
+        (message) =>
+            message.audience == 'provider' && message.recipientId == accountId,
+      );
+      if (_session?.id == accountId) _session = null;
+      return null;
+    }
+    if (audience == 'client') {
+      final account = clientById(accountId);
+      if (account == null) return 'الحساب غير موجود';
+      final requestIds = requests
+          .where((request) => request.clientId == accountId)
+          .map((request) => request.id)
+          .toSet();
+      _clientAccounts.removeWhere((item) => item.id == accountId);
+      _orders.removeWhere((order) => order.clientId == accountId);
+      requests.removeWhere((request) => request.clientId == accountId);
+      _ratings.removeWhere((rating) => requestIds.contains(rating.requestId));
+      _clients.remove(accountId);
+      _messages.removeWhere(
+        (message) =>
+            message.audience == 'client' && message.recipientId == accountId,
+      );
+      _invoices.removeWhere((invoice) => invoice.partyName == account.name);
+      if (_clientSession?.id == accountId) _clientSession = null;
+      return null;
+    }
+    return 'نوع الحساب غير معروف';
+  }
+
+  Future<void> hydrate() async {
+    final cached = await _store.readCache();
+    if (cached != null) {
+      _apply(cached);
+      _base = cached;
+    }
+    try {
+      final remote = await _store.load();
+      if (remote != null) {
+        _apply(remote);
+        _base = remote;
+        syncError = null;
+      }
+    } catch (_) {
+      syncError ??= 'تعذر تحميل البيانات المحفوظة. تحقق من الاتصال.';
+    }
+    notifyListeners();
+  }
+
+  void noteSyncFailure() {
+    syncError = 'تعذر تحميل البيانات المحفوظة. تحقق من الاتصال.';
+    notifyListeners();
+  }
+
+  Future<void> flush() => _saveChain ?? Future<void>.value();
+
+  void _touch() {
+    notifyListeners();
+    _enqueue(_persist);
+  }
+
+  void _enqueue(Future<void> Function() action) {
+    _saveChain = (_saveChain ?? Future<void>.value()).then((_) => action());
+  }
+
+  Future<void> _refresh() async {
+    try {
+      final remote = await _store.load();
+      if (remote == null) return;
+      _apply(remote);
+      _base = remote;
+      syncError = null;
+      notifyListeners();
+    } catch (_) {
+      syncError = 'تعذر تحميل البيانات المحفوظة. تحقق من الاتصال.';
+      notifyListeners();
+    }
+  }
+
+  Future<void> _persist() async {
+    try {
+      final remote = await _store.load();
+      final local = _capture();
+      final merged = mergeSnapshots(base: _base, local: local, remote: remote);
+      await _store.save(merged);
+      _base = merged;
+      syncError = null;
+      if (!local.sameData(merged)) {
+        _apply(merged);
+        notifyListeners();
+      }
+    } catch (_) {
+      syncError = 'تعذر حفظ البيانات على الويب. حاول مرة أخرى.';
+      notifyListeners();
+    }
+  }
+
+  SharedSnapshot _capture() {
+    return SharedSnapshot(
+      revision: _base.revision,
+      services: List<ServiceCategory>.from(_extraCategories),
+      suggestions: List<OwnerSuggestion>.from(_suggestions),
+      messages: List<DeskMessage>.from(_messages),
+      billing: _billing,
+      startingPrices: Map<String, int>.from(_startingPrices),
+      clients: List<ClientAccount>.from(_clientAccounts),
+      providers: List<ProviderAccount>.from(_providers),
+      technicians: List<Technician>.from(_technicians),
+      orders: List<ServiceOrder>.from(_orders),
+      requests: List<ServiceRequest>.from(requests),
+      ratings: List<ProviderRating>.from(_ratings),
+      subscriptions: _clients.values.toList(),
+      invoices: List<ServickInvoice>.from(_invoices),
+      deletionRequests: List<AccountDeletionRequest>.from(_deletionRequests),
+      serviceSequence: _serviceSequence,
+      suggestionSequence: _suggestionSequence,
+      messageSequence: _messageSequence,
+      clientSequence: _clientSequence,
+      providerSequence: _providerSequence,
+      technicianSequence: _technicianSequence,
+      deletionSequence: _deletionSequence,
+      requestSequence: _sequence,
+      clientOrderSequence: _clientOrderSequence,
+    );
+  }
+
+  void _apply(SharedSnapshot snapshot) {
+    _extraCategories
+      ..clear()
+      ..addAll(snapshot.services);
+    _suggestions
+      ..clear()
+      ..addAll(snapshot.suggestions);
+    _messages
+      ..clear()
+      ..addAll(snapshot.messages);
+    _billing = snapshot.billing;
+    _startingPrices
+      ..clear()
+      ..addAll(snapshot.startingPrices);
+    _clientAccounts
+      ..clear()
+      ..addAll(snapshot.clients);
+    _providers
+      ..clear()
+      ..addAll(snapshot.providers);
+    _technicians
+      ..clear()
+      ..addAll(snapshot.technicians);
+    _orders
+      ..clear()
+      ..addAll(snapshot.orders);
+    requests
+      ..clear()
+      ..addAll(snapshot.requests);
+    _ratings
+      ..clear()
+      ..addAll(snapshot.ratings);
+    _clients
+      ..clear()
+      ..addEntries(
+        snapshot.subscriptions.map(
+          (subscription) => MapEntry(subscription.clientId, subscription),
+        ),
+      );
+    _invoices
+      ..clear()
+      ..addAll(snapshot.invoices);
+    _deletionRequests
+      ..clear()
+      ..addAll(snapshot.deletionRequests);
+    _serviceSequence = _maxSeq(
+      snapshot.serviceSequence,
+      _maxSuffix(snapshot.services.map((item) => item.id), 'custom-'),
+    );
+    _suggestionSequence = _maxSeq(
+      snapshot.suggestionSequence,
+      _maxSuffix(snapshot.suggestions.map((item) => item.id), 'sug-'),
+    );
+    _messageSequence = _maxSeq(
+      snapshot.messageSequence,
+      _maxSuffix(
+        snapshot.messages
+            .where((message) => message.id.startsWith('msg-'))
+            .map((message) => message.id),
+        'msg-',
+      ),
+    );
+    _clientSequence = _maxSeq(
+      snapshot.clientSequence,
+      _maxSuffix(snapshot.clients.map((item) => item.id), 'client-'),
+    );
+    _providerSequence = _maxSeq(
+      snapshot.providerSequence,
+      _maxSuffix(snapshot.providers.map((item) => item.id), 'prov-'),
+    );
+    _technicianSequence = _maxSeq(
+      snapshot.technicianSequence,
+      _maxSuffix(snapshot.technicians.map((item) => item.id), 'tech-'),
+    );
+    _deletionSequence = _maxSeq(
+      snapshot.deletionSequence,
+      _maxSuffix(snapshot.deletionRequests.map((item) => item.id), 'del-'),
+    );
+    _sequence = _maxSeq(
+      snapshot.requestSequence,
+      _maxSuffix(snapshot.requests.map((item) => item.id), 'SV-'),
+    );
+    _clientOrderSequence = _maxSeq(
+      snapshot.clientOrderSequence,
+      _maxSuffix(snapshot.orders.map((item) => item.id), 'ord-c-'),
+    );
+    final sessionId = _session?.id;
+    _session = sessionId == null ? null : providerById(sessionId);
+    final clientId = _clientSession?.id;
+    _clientSession = clientId == null ? null : clientById(clientId);
+  }
+
+  int _maxSeq(int stored, int fromIds) => stored > fromIds ? stored : fromIds;
+
+  int _maxSuffix(Iterable<String> ids, String prefix) {
+    var max = 0;
+    for (final id in ids) {
+      if (!id.startsWith(prefix)) continue;
+      final value = int.tryParse(id.substring(prefix.length));
+      if (value != null && value > max) max = value;
+    }
+    return max;
   }
 }
 

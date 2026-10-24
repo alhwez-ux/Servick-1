@@ -37,7 +37,7 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
     if (_ready) return;
     _ready = true;
     final model = AppScope.of(context);
-    for (final technician in technicians) {
+    for (final technician in AppScope.of(context).technicians) {
       _prices[technician.id] = TextEditingController(
         text: '${model.startingPriceOf(technician)}',
       );
@@ -86,7 +86,7 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'التعديل يبقى داخل الجلسة ويظهر للعميل والحرفي فوراً. الفوترة محاكاة ولا تخصم مبلغاً.',
+                'التعديل يُحفظ على الويب ويظهر من أي جهاز. الفوترة محاكاة ولا تخصم مبلغاً.',
                 style: TextStyle(color: ServickColors.muted, height: 1.6),
               ),
               const SizedBox(height: 20),
@@ -106,7 +106,7 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                for (final technician in technicians)
+                for (final technician in model.technicians)
                   if (technician.city == city) ...[
                     _PriceRow(
                       technician: technician,
@@ -173,7 +173,7 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
               const SizedBox(height: 12),
               if (model.deskMessages.isEmpty)
                 const Text(
-                  'لا توجد رسائل مرسلة في هذه الجلسة.',
+                  'لا توجد رسائل محفوظة.',
                   key: Key('messages-empty'),
                   style: TextStyle(color: ServickColors.muted, height: 1.5),
                 )
@@ -430,6 +430,16 @@ class _MessageCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(message.body, style: const TextStyle(height: 1.5)),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton(
+              key: Key('delete-message-${message.id}'),
+              onPressed: () {
+                AppScope.of(context).removeDeskMessage(message.id);
+              },
+              child: const Text('حذف الرسالة'),
+            ),
+          ),
         ],
       ),
     );

@@ -1,9 +1,12 @@
+import '../data/password_hash.dart';
+
 class ProviderAccount {
   const ProviderAccount({
     required this.id,
     required this.technicianId,
     required this.phone,
-    required this.password,
+    required this.passwordHash,
+    required this.passwordSalt,
     required this.subscriptionStatus,
     required this.subscriptionExpiry,
   });
@@ -11,9 +14,14 @@ class ProviderAccount {
   final String id;
   final String technicianId;
   final String phone;
-  final String password;
+  final String passwordHash;
+  final String passwordSalt;
   final String subscriptionStatus;
   final DateTime? subscriptionExpiry;
+
+  bool matchesPassword(String raw) {
+    return hashPassword(raw, passwordSalt) == passwordHash;
+  }
 
   bool isSubscribedAt(DateTime now) {
     final expiry = subscriptionExpiry;
@@ -30,7 +38,8 @@ class ProviderAccount {
       id: id,
       technicianId: technicianId,
       phone: phone,
-      password: password,
+      passwordHash: passwordHash,
+      passwordSalt: passwordSalt,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       subscriptionExpiry: subscriptionExpiry ?? this.subscriptionExpiry,
     );

@@ -4,12 +4,13 @@ import '../app_scope.dart';
 import '../data/catalog.dart';
 import '../data/client_plans.dart';
 import '../data/format.dart';
-import '../data/matching.dart';
 import '../models/client_subscription.dart';
 import '../models/models.dart';
 import '../models/order.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
+import 'client_auth_screen.dart';
+import '../widgets/account_deletion_button.dart';
 import '../widgets/category_card.dart';
 import '../widgets/complimentary_notice.dart';
 import '../widgets/desk_inbox.dart';
@@ -23,7 +24,7 @@ class ClientHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = AppScope.of(context);
-    final openNow = availableInCity(model.city);
+    final openNow = model.availableInCity(model.city);
     final columns = MediaQuery.sizeOf(context).width >= 900 ? 3 : 2;
 
     return ServickScaffold(
@@ -42,20 +43,35 @@ class ClientHomeScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _EmergencyBanner(city: model.city),
               const SizedBox(height: 16),
-              ComplimentaryNotice(
-                audience: 'client',
-                recipientId: demoClientId,
-                onPay: () {
-                  Navigator.of(context).pushNamed(
-                    ServickRoutes.clientSubscription,
-                    arguments: const ClientSubscriptionArgs(
-                      clientId: demoClientId,
-                      isAdmin: false,
-                    ),
-                  );
-                },
-              ),
-              DeskInbox(audience: 'client', recipientId: demoClientId),
+              if (model.syncError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    model.syncError!,
+                    key: const Key('sync-error'),
+                    style: const TextStyle(color: ServickColors.emergency),
+                  ),
+                ),
+              const _ClientAccountCard(),
+              if (model.clientSession != null) ...[
+                ComplimentaryNotice(
+                  audience: 'client',
+                  recipientId: model.clientSession!.id,
+                  onPay: () {
+                    Navigator.of(context).pushNamed(
+                      ServickRoutes.clientSubscription,
+                      arguments: ClientSubscriptionArgs(
+                        clientId: model.clientSession!.id,
+                        isAdmin: false,
+                      ),
+                    );
+                  },
+                ),
+                DeskInbox(
+                  audience: 'client',
+                  recipientId: model.clientSession!.id,
+                ),
+              ],
               const SizedBox(height: 6),
               if (openNow.isNotEmpty) ...[
                 const SectionTitle('متاحون الآن'),
@@ -88,11 +104,16 @@ class ClientHomeScreen extends StatelessWidget {
                 child: FilledButton.icon(
                   key: const Key('open-client-order'),
                   onPressed: () {
+                    final session = model.clientSession;
+                    if (session == null) {
+                      Navigator.of(context).pushNamed(ServickRoutes.clientAuth);
+                      return;
+                    }
                     Navigator.of(context).pushNamed(
                       ServickRoutes.clientOrder,
-                      arguments: const ClientOrderArgs(
-                        clientId: demoClientId,
-                        clientName: demoClientName,
+                      arguments: ClientOrderArgs(
+                        clientId: session.id,
+                        clientName: session.name,
                       ),
                     );
                   },
@@ -105,10 +126,15 @@ class ClientHomeScreen extends StatelessWidget {
                 child: TextButton.icon(
                   key: const Key('open-client-plans'),
                   onPressed: () {
+                    final session = model.clientSession;
+                    if (session == null) {
+                      Navigator.of(context).pushNamed(ServickRoutes.clientAuth);
+                      return;
+                    }
                     Navigator.of(context).pushNamed(
                       ServickRoutes.clientSubscription,
-                      arguments: const ClientSubscriptionArgs(
-                        clientId: demoClientId,
+                      arguments: ClientSubscriptionArgs(
+                        clientId: session.id,
                         isAdmin: false,
                       ),
                     );
@@ -143,7 +169,9 @@ class ClientHomeScreen extends StatelessWidget {
                 ),
               ),
               _ClientPlanNote(
-                subscription: model.clientSubscription(demoClientId),
+                subscription: model.clientSession == null
+                    ? null
+                    : model.clientSubscription(model.clientSession!.id),
               ),
               Center(
                 child: TextButton.icon(
@@ -155,6 +183,101 @@ class ClientHomeScreen extends StatelessWidget {
                   icon: const Icon(Icons.engineering_rounded),
                   label: const Text('دخول مزودي الخدمات'),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ClientAccountCard extends StatelessWidget {
+  const _ClientAccountCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final model = AppScope.of(context);
+    final session = model.clientSession;
+    if (session == null) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Material(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: ServickColors.line),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'حساب العميل',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'أنشئ حساباً ليصل طلبك واشتراكك من أي جهاز. لا توجد حسابات تجريبية جاهزة.',
+                  style: TextStyle(color: ServickColors.muted, height: 1.5),
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  key: const Key('open-client-register'),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      ServickRoutes.clientAuth,
+                      arguments: const ClientAuthArgs(register: true),
+                    );
+                  },
+                  child: const Text('إنشاء حساب'),
+                ),
+                TextButton(
+                  key: const Key('open-client-login'),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                      ServickRoutes.clientAuth,
+                      arguments: const ClientAuthArgs(register: false),
+                    );
+                  },
+                  child: const Text('دخول'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: ServickColors.line),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                session.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${formatPhone(session.phone)} · ${session.city}',
+                style: const TextStyle(color: ServickColors.muted),
+              ),
+              AccountDeletionButton(audience: 'client', accountId: session.id),
+              TextButton(
+                onPressed: model.logoutClient,
+                child: const Text('تسجيل الخروج'),
               ),
             ],
           ),
@@ -364,7 +487,9 @@ class _AvailableStrip extends StatelessWidget {
         separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final technician = technicians[index];
-          final category = categoryById(technician.categoryId);
+          final category =
+              AppScope.of(context).categoryOf(technician.categoryId) ??
+              categories.first;
           return SizedBox(
             width: 230,
             child: Material(

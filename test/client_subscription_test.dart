@@ -4,6 +4,8 @@ import 'package:servick/app_scope.dart';
 import 'package:servick/data/client_plans.dart';
 import 'package:servick/main.dart';
 
+import 'support/accounts.dart';
+
 void main() {
   test('client plans hide the owner package and expiry follows the months', () {
     final now = DateTime.utc(2026, 10, 23, 12);
@@ -76,6 +78,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
+    final client = seedClient(model, signIn: true);
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
 
@@ -116,7 +119,7 @@ void main() {
     expect(find.byKey(const Key('client-plan-note')), findsOneWidget);
     expect(find.textContaining('اشتراك 12 شهراً'), findsOneWidget);
     expect(find.textContaining('2027/10/18'), findsOneWidget);
-    expect(model.clientSubscription(demoClientId)?.planId, 'annual');
+    expect(model.clientSubscription(client.id)?.planId, 'annual');
   });
 
   testWidgets('the owner preview includes the free package', (tester) async {
@@ -125,9 +128,8 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      ServickApp(model: AppModel(now: () => DateTime.utc(2026, 10, 23, 12))),
-    );
+    final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
+    await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('open-owner-plans')));
     await tester.tap(find.byKey(const Key('open-owner-plans')));
@@ -149,6 +151,7 @@ void main() {
     await tester.tap(find.byKey(const Key('accept-privacy')));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('باقة المالك الخاصة'), findsOneWidget);
+    expect(find.text('باقات اشتراك العملاء | Servick'), findsNothing);
+    expect(model.clientSubscription(demoClientId)?.planId, 'free_admin');
   });
 }

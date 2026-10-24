@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
 import 'package:servick/data/client_plans.dart';
-import 'package:servick/data/providers.dart';
 import 'package:servick/main.dart';
+
+import 'support/accounts.dart';
 
 void main() {
   test('an urgent order stays pending for the chosen city', () {
@@ -52,10 +53,7 @@ void main() {
     expect(order.notes, 'بدون ملاحظات إضافية');
     expect(order.status, 'pending');
     expect(order.createdAt, now);
-    expect(model.pendingOrdersIn('خميس مشيط').map((item) => item.id), [
-      'ord-km-1',
-      'ord-km-2',
-    ]);
+    expect(model.pendingOrdersIn('خميس مشيط'), isEmpty);
   });
 
   testWidgets('sending an order without a specialty stays on the form', (
@@ -66,7 +64,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(ServickApp(model: AppModel()));
+    final model = AppModel();
+    seedClient(model, name: demoClientName, signIn: true);
+    await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('open-client-order')));
     await tester.tap(find.byKey(const Key('open-client-order')));
@@ -97,6 +97,15 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
+      seedClient(model, name: demoClientName, signIn: true);
+      seedProvider(
+        model,
+        name: 'فهد سعيد الشهري',
+        phone: '0554102201',
+        city: 'خميس مشيط',
+        categoryId: 'petrol',
+        active: true,
+      );
       await tester.pumpWidget(ServickApp(model: model));
       await tester.pumpAndSettle();
 
@@ -148,7 +157,7 @@ void main() {
       );
       await tester.enterText(
         find.byKey(const Key('provider-password')),
-        demoProviderPassword,
+        fixturePassword,
       );
       await tester.ensureVisible(find.byKey(const Key('provider-privacy')));
       await tester.tap(find.byKey(const Key('provider-privacy')));

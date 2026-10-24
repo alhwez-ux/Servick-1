@@ -6,24 +6,81 @@ import 'package:servick/data/matching.dart';
 import 'package:servick/data/phone.dart';
 import 'package:servick/models/models.dart';
 
+Technician _person({
+  required String id,
+  required String categoryId,
+  required String city,
+  required bool available,
+  required int etaMinutes,
+  required double rating,
+  required int jobs,
+}) {
+  return Technician(
+    id: id,
+    name: id,
+    categoryId: categoryId,
+    city: city,
+    rating: rating,
+    jobs: jobs,
+    years: 5,
+    available: available,
+    etaMinutes: etaMinutes,
+    startingPrice: 80,
+    phone: '0550000000',
+    about: 'فحص',
+    services: const [],
+    review: const CustomerReview(author: 'عميل', text: 'جيد'),
+  );
+}
+
+final _people = [
+  _person(
+    id: 'p-km-1',
+    categoryId: 'petrol',
+    city: 'خميس مشيط',
+    available: true,
+    etaMinutes: 25,
+    rating: 4.8,
+    jobs: 10,
+  ),
+  _person(
+    id: 'p-km-2',
+    categoryId: 'petrol',
+    city: 'خميس مشيط',
+    available: true,
+    etaMinutes: 40,
+    rating: 4.6,
+    jobs: 8,
+  ),
+  _person(
+    id: 'd-ab-1',
+    categoryId: 'diesel',
+    city: 'أبها',
+    available: false,
+    etaMinutes: 20,
+    rating: 4.4,
+    jobs: 4,
+  ),
+  _person(
+    id: 'a-km-1',
+    categoryId: 'auto_elec',
+    city: 'خميس مشيط',
+    available: true,
+    etaMinutes: 12,
+    rating: 4.9,
+    jobs: 12,
+  ),
+];
+
 void main() {
-  test('catalog stays inside the launch cities and categories', () {
+  test('the platform starts without seeded accounts', () {
+    final model = AppModel();
+    expect(model.providers, isEmpty);
+    expect(model.technicians, isEmpty);
+    expect(model.clientAccounts, isEmpty);
+    expect(model.orderCount, 0);
+
     final categoryIds = categories.map((category) => category.id).toSet();
-    final technicianIds = <String>{};
-    final phones = <String>{};
-
-    for (final technician in technicians) {
-      expect(categoryIds, contains(technician.categoryId));
-      expect(cities, contains(technician.city));
-      expect(technician.phone, matches(RegExp(r'^05\d{8}$')));
-      expect(technician.rating, inInclusiveRange(1, 5));
-      technicianIds.add(technician.id);
-      phones.add(technician.phone);
-    }
-
-    expect(technicianIds.length, technicians.length);
-    expect(phones.length, technicians.length);
-
     for (final issue in roadsideIssues) {
       expect(issue.categoryIds, isNotEmpty);
       for (final id in issue.categoryIds) {
@@ -33,11 +90,19 @@ void main() {
   });
 
   test('chinese mechanics are not listed in Ahad Rufaidah', () {
-    expect(techniciansFor(categoryId: 'chinese', city: 'أحد رفيدة'), isEmpty);
+    expect(
+      techniciansFor(
+        people: _people,
+        categoryId: 'chinese',
+        city: 'أحد رفيدة',
+      ),
+      isEmpty,
+    );
   });
 
   test('battery emergency in Khamis picks the nearest electrician', () {
     final technician = nearestAvailable(
+      people: _people,
       city: 'خميس مشيط',
       categoryIds: const ['auto_elec', 'petrol'],
     );
@@ -46,13 +111,18 @@ void main() {
 
   test('busy diesel technician in Abha is skipped', () {
     expect(
-      nearestAvailable(city: 'أبها', categoryIds: const ['diesel']),
+      nearestAvailable(
+        people: _people,
+        city: 'أبها',
+        categoryIds: const ['diesel'],
+      ),
       isNull,
     );
   });
 
   test('rating order puts the higher score first', () {
     final list = techniciansFor(
+      people: _people,
       categoryId: 'petrol',
       city: 'خميس مشيط',
       order: TechnicianSort.rating,

@@ -21,7 +21,8 @@ class TechnicianTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final model = AppScope.of(context);
-    final category = categoryById(technician.categoryId);
+    final category =
+        model.categoryOf(technician.categoryId) ?? categories.first;
     final rating = model.displayRating(technician);
     final jobs = model.displayJobs(technician);
     return Material(

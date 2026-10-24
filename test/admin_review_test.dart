@@ -5,17 +5,21 @@ import 'package:servick/data/admin.dart';
 import 'package:servick/main.dart';
 import 'package:servick/routes.dart';
 
+import 'support/accounts.dart';
+
 void main() {
   test('the owner saves a suggestion and can read every order', () {
     final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
 
-    expect(model.orders, hasLength(4));
-    expect(model.orders.map((order) => order.city), [
-      'خميس مشيط',
-      'خميس مشيط',
-      'أبها',
-      'أحد رفيدة',
-    ]);
+    expect(model.orders, isEmpty);
+    model.submitClientOrder(
+      clientId: 'client-a',
+      clientName: 'أبو محمد',
+      categoryId: 'benz_mech',
+      city: 'خميس مشيط',
+      notes: 'صوت في المكينة عند التشغيل قرب طريق الملك فهد',
+    );
+    expect(model.orders, hasLength(1));
     expect(
       model.addOwnerSuggestion(area: 'missing', text: 'نص'),
       'اختر موضع التعديل',
@@ -43,6 +47,28 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
+    seedProvider(
+      model,
+      name: 'فهد سعيد الشهري',
+      phone: '0554102201',
+      city: 'خميس مشيط',
+      categoryId: 'petrol',
+      active: true,
+    );
+    seedProvider(
+      model,
+      name: 'خالد أحمد عسيري',
+      phone: '0554102206',
+      city: 'أبها',
+      categoryId: 'diesel',
+    );
+    model.submitClientOrder(
+      clientId: 'client-a',
+      clientName: 'أبو محمد',
+      categoryId: 'benz_mech',
+      city: 'خميس مشيط',
+      notes: 'صوت في المكينة عند التشغيل قرب طريق الملك فهد',
+    );
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
 

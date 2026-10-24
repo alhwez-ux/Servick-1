@@ -7,6 +7,7 @@ import '../models/models.dart';
 import '../models/order.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/account_deletion_button.dart';
 import '../widgets/common.dart';
 import '../widgets/complimentary_notice.dart';
 import '../widgets/desk_inbox.dart';
@@ -33,7 +34,7 @@ class ProviderDashboardScreen extends StatelessWidget {
       );
     }
 
-    final technician = findTechnician(session.technicianId);
+    final technician = model.technicianById(session.technicianId);
     final category = technician == null
         ? null
         : categoryById(technician.categoryId);
@@ -116,6 +117,7 @@ class ProviderDashboardScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+            AccountDeletionButton(audience: 'provider', accountId: session.id),
             OutlinedButton.icon(
               key: const Key('open-subscription'),
               onPressed: () {

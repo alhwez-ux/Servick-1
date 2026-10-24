@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/main.dart';
 import 'package:servick/app_scope.dart';
 
+import 'support/accounts.dart';
+
 Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpWidget(ServickApp(model: AppModel()));
   await tester.pumpAndSettle();
@@ -65,7 +67,18 @@ void main() {
   testWidgets('emergency request matches the nearest technician', (
     tester,
   ) async {
-    await _pumpApp(tester);
+    final model = AppModel();
+    seedClient(model, signIn: true);
+    seedProvider(
+      model,
+      name: 'بدر محمد الشهري',
+      phone: '0554102211',
+      city: 'خميس مشيط',
+      categoryId: 'auto_elec',
+      active: true,
+    );
+    await tester.pumpWidget(ServickApp(model: model));
+    await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.byKey(const Key('open-emergency')));
     await tester.tap(find.byKey(const Key('open-emergency')));
@@ -110,12 +123,23 @@ void main() {
   });
 
   testWidgets('booking a mechanic stores the request', (tester) async {
-    await _pumpApp(tester);
+    final model = AppModel();
+    seedClient(model, signIn: true);
+    final account = seedProvider(
+      model,
+      name: 'فهد سعيد الشهري',
+      phone: '0554102201',
+      city: 'خميس مشيط',
+      categoryId: 'petrol',
+      active: true,
+    );
+    await tester.pumpWidget(ServickApp(model: model));
+    await tester.pumpAndSettle();
 
     await tester.ensureVisible(find.byKey(const Key('category-petrol')));
     await tester.tap(find.byKey(const Key('category-petrol')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('tech-p-km-1')));
+    await tester.tap(find.byKey(Key('tech-${account.technicianId}')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('اطلب هذا الفني'));
     await tester.pumpAndSettle();

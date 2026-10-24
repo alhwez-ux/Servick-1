@@ -5,6 +5,7 @@ import '../app_scope.dart';
 import '../data/format.dart';
 import '../data/service_pictures.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/confirm_action.dart';
 import '../widgets/service_artwork.dart';
 
 class AdminServiceScreen extends StatefulWidget {
@@ -38,6 +39,22 @@ class _AdminServiceScreenState extends State<AdminServiceScreen> {
     final next = pictureForTitle(_title.text).id;
     if (next == _pictureId) return;
     setState(() => _pictureId = next);
+  }
+
+  Future<void> _deleteService(String id) async {
+    final approved = await confirmAction(
+      context,
+      title: 'حذف الخدمة',
+      message: 'تُحذف الخدمة من كل الأجهزة. لا يعود هذا إلا بإضافتها من جديد.',
+      confirm: 'حذف الخدمة',
+    );
+    if (!approved || !mounted) return;
+    final error = AppScope.of(context).removeService(id);
+    if (!mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
+    }
   }
 
   void _save() {
@@ -85,7 +102,7 @@ class _AdminServiceScreenState extends State<AdminServiceScreen> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
                 const Text(
-                  'الخدمة تُضاف إلى شبكة الرئيسية في هذه الجلسة. تُختار صورة حسب الاسم، ويمكن تغييرها قبل الحفظ.',
+                  'الخدمة تُحفظ على الويب وتظهر في الرئيسية من أي جهاز. تُختار صورة حسب الاسم، ويمكن تغييرها قبل الحفظ. لا تُحذف إلا من هنا.',
                   style: TextStyle(height: 1.6, color: ServickColors.muted),
                 ),
                 const SizedBox(height: 16),
@@ -193,7 +210,7 @@ class _AdminServiceScreenState extends State<AdminServiceScreen> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'خدمات هذه الجلسة',
+                  'الخدمات المضافة',
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
@@ -218,6 +235,12 @@ class _AdminServiceScreenState extends State<AdminServiceScreen> {
                           service.subtitle,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: IconButton(
+                          key: Key('delete-service-${service.id}'),
+                          tooltip: 'حذف الخدمة',
+                          onPressed: () => _deleteService(service.id),
+                          icon: const Icon(Icons.delete_outline),
                         ),
                       ),
                     ),

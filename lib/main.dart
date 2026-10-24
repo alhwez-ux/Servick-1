@@ -12,12 +12,15 @@ import 'screens/admin_login_screen.dart';
 import 'screens/admin_review_screen.dart';
 import 'screens/admin_service_screen.dart';
 import 'screens/booking_screen.dart';
+import 'data/shared_store.dart';
+import 'screens/client_auth_screen.dart';
 import 'screens/client_order_screen.dart';
 import 'screens/client_subscription_screen.dart';
 import 'screens/emergency_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
 import 'screens/provider_login_screen.dart';
+import 'screens/provider_register_screen.dart';
 import 'screens/provider_orders_screen.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/provider_subscription_screen.dart';
@@ -27,8 +30,15 @@ import 'screens/technician_screen.dart';
 import 'screens/technicians_screen.dart';
 import 'theme/servick_theme.dart';
 
-void main() {
-  runApp(ServickApp(model: AppModel()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final model = AppModel(store: HttpSharedStore());
+  try {
+    await model.hydrate().timeout(const Duration(seconds: 8));
+  } catch (_) {
+    model.noteSyncFailure();
+  }
+  runApp(ServickApp(model: model));
 }
 
 class ServickApp extends StatelessWidget {
@@ -74,6 +84,7 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.requests => const RequestsScreen(),
     ServickRoutes.request => _details(settings.arguments! as RequestRouteArgs),
     ServickRoutes.providerLogin => const ProviderLoginScreen(),
+    ServickRoutes.providerRegister => const ProviderRegisterScreen(),
     ServickRoutes.providerRenew => ProviderSubscriptionScreen(
       providerId: settings.arguments! as String,
     ),
@@ -83,6 +94,11 @@ Route<void>? _onGenerateRoute(RouteSettings settings) {
     ServickRoutes.providerDashboard => const ProviderDashboardScreen(),
     ServickRoutes.providerOrders => _orders(
       settings.arguments! as ProviderOrdersArgs,
+    ),
+    ServickRoutes.clientAuth => ClientAuthScreen(
+      register: settings.arguments is ClientAuthArgs
+          ? (settings.arguments! as ClientAuthArgs).register
+          : true,
     ),
     ServickRoutes.clientSubscription => _clientPlans(
       settings.arguments! as ClientSubscriptionArgs,

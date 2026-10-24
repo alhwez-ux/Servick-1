@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
-import '../data/catalog.dart';
-import '../data/client_plans.dart';
 import '../data/phone.dart';
 import '../models/models.dart';
 import '../routes.dart';
@@ -38,13 +36,22 @@ class _BookingScreenState extends State<BookingScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final allowed = await requireClientPrivacy(context);
     if (!allowed || !mounted) return;
-    final block = AppScope.of(context).clientServiceBlock(demoClientId);
+    final model = AppScope.of(context);
+    final session = model.clientSession;
+    if (session == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('أنشئ حساباً أو ادخل قبل إرسال الطلب')),
+      );
+      await Navigator.of(context).pushNamed(ServickRoutes.clientAuth);
+      return;
+    }
+    final block = model.clientServiceBlock(session.id);
     if (block != null) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(block)));
       return;
     }
-    final request = AppScope.of(context).submit(
+    final request = model.submit(
       kind: RequestKind.booking,
       categoryId: technician.categoryId,
       technicianId: technician.id,
@@ -54,6 +61,8 @@ class _BookingScreenState extends State<BookingScreen> {
       phone: _phone.text,
       whenLabel: _when,
       assignNow: technician.available,
+      clientId: session.id,
+      clientName: session.name,
     );
     Navigator.of(context).pushNamed(
       ServickRoutes.request,
@@ -63,7 +72,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final technician = findTechnician(widget.technicianId);
+    final technician = AppScope.of(context).technicianById(widget.technicianId);
     if (technician == null) {
       return const ServickScaffold(
         title: 'طلب الخدمة',
@@ -93,7 +102,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${categoryById(technician.categoryId).title} · ${technician.city}',
+                  '${AppScope.of(context).categoryOf(technician.categoryId)?.title ?? technician.categoryId} · ${technician.city}',
                   style: const TextStyle(color: ServickColors.muted),
                 ),
                 const SizedBox(height: 8),

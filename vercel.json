@@ -3,6 +3,6 @@
   "buildCommand": "echo 'Using the committed hosting bundle.'",
   "outputDirectory": "hosting",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
