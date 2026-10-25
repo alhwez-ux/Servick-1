@@ -21,7 +21,7 @@ class AdminDashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'لوحة تحكم المالك | Servick Admin',
+          'لوحة تحكم المالك | رابط',
           style: TextStyle(fontFamily: 'Cairo', fontSize: 16),
         ),
         backgroundColor: ServickColors.navy,

@@ -35,14 +35,14 @@ void main() {
 
   testWidgets('an empty passcode stays on the owner login', (tester) async {
     await _openLogin(tester);
-    expect(find.text('دخول مالك التطبيق | Servick'), findsOneWidget);
+    expect(find.text('دخول مالك التطبيق | رابط'), findsOneWidget);
     expect(find.text('منطقة الإدارة العليا'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('admin-login')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('الرجاء إدخال الرقم السري الخاص بالمالك'), findsOneWidget);
-    expect(find.text('دخول مالك التطبيق | Servick'), findsOneWidget);
+    expect(find.text('دخول مالك التطبيق | رابط'), findsOneWidget);
   });
 
   testWidgets('a wrong passcode stays on the owner login', (tester) async {
@@ -51,12 +51,12 @@ void main() {
     await tester.pump();
 
     expect(find.text('الرقم السري غير صحيح، حاول مرة أخرى'), findsOneWidget);
-    expect(find.text('دخول مالك التطبيق | Servick'), findsOneWidget);
-    expect(find.text('لوحة تحكم المالك | Servick Admin'), findsNothing);
+    expect(find.text('دخول مالك التطبيق | رابط'), findsOneWidget);
+    expect(find.text('لوحة تحكم المالك | رابط'), findsNothing);
 
     await _submit(tester, demoAdminPasscode);
     await tester.pumpAndSettle();
-    expect(find.text('لوحة تحكم المالك | Servick Admin'), findsOneWidget);
+    expect(find.text('لوحة تحكم المالك | رابط'), findsOneWidget);
     expect(find.text('الرقم السري غير صحيح، حاول مرة أخرى'), findsNothing);
   });
 
@@ -67,13 +67,13 @@ void main() {
       await _submit(tester, demoAdminPasscode);
       await tester.pumpAndSettle();
 
-      expect(find.text('لوحة تحكم المالك | Servick Admin'), findsOneWidget);
-      expect(find.text('دخول مالك التطبيق | Servick'), findsNothing);
+      expect(find.text('لوحة تحكم المالك | رابط'), findsOneWidget);
+      expect(find.text('دخول مالك التطبيق | رابط'), findsNothing);
 
       tester.state<NavigatorState>(find.byType(Navigator)).pop();
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('open-admin-login')), findsOneWidget);
-      expect(find.text('دخول مالك التطبيق | Servick'), findsNothing);
+      expect(find.text('دخول مالك التطبيق | رابط'), findsNothing);
     },
   );
 
@@ -92,7 +92,7 @@ void main() {
         .pushNamed(ServickRoutes.adminDashboard);
     await tester.pumpAndSettle();
 
-    expect(find.text('دخول مالك التطبيق | Servick'), findsOneWidget);
-    expect(find.text('لوحة تحكم المالك | Servick Admin'), findsNothing);
+    expect(find.text('دخول مالك التطبيق | رابط'), findsOneWidget);
+    expect(find.text('لوحة تحكم المالك | رابط'), findsNothing);
   });
 }

@@ -836,7 +836,7 @@ Technician _technician(Map<String, dynamic> json) {
     about: json['about'] as String,
     services: [for (final item in _list(json['services'])) item as String],
     review: CustomerReview(
-      author: json['reviewAuthor'] as String? ?? 'سيرفيسك',
+      author: json['reviewAuthor'] as String? ?? 'رابط',
       text: json['reviewText'] as String? ?? 'لا توجد تقييمات بعد.',
       stars: json['reviewStars'] as int?,
     ),

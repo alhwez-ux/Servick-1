@@ -102,7 +102,7 @@ class _ClientOrderScreenState extends State<ClientOrderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'طلب خدمة صيانة عاجلة | Servick',
+          'طلب خدمة صيانة عاجلة | رابط',
           style: TextStyle(fontFamily: 'Cairo', fontSize: 15),
         ),
         backgroundColor: ServickColors.navy,

@@ -201,7 +201,7 @@ void main() {
         .pushNamed(ServickRoutes.adminDesk);
     await tester.pumpAndSettle();
 
-    expect(find.text('دخول مالك التطبيق | Servick'), findsOneWidget);
+    expect(find.text('دخول مالك التطبيق | رابط'), findsOneWidget);
     expect(find.text('نظام الفوترة'), findsNothing);
   });
 }

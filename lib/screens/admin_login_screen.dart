@@ -63,7 +63,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'دخول مالك التطبيق | Servick',
+          'دخول مالك التطبيق | رابط',
           style: TextStyle(fontFamily: 'Cairo', fontSize: 16),
         ),
         backgroundColor: ServickColors.navy,

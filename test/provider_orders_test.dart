@@ -129,7 +129,7 @@ void main() {
       whenLabel: 'فوراً',
       assignNow: false,
     );
-    expect(model.pendingOrdersIn('خميس مشيط').first.clientName, 'عميل Servick');
+    expect(model.pendingOrdersIn('خميس مشيط').first.clientName, 'عميل رابط');
     expect(
       model.acceptOrder(orderId: 'ord-SV-1041', providerId: 'missing'),
       'حساب المزود غير معروف',

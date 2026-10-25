@@ -64,7 +64,7 @@ void main() {
     final saved = model.ratingForRequest(request.id)!;
     expect(saved.stars, 5);
     expect(saved.comment, 'بدون تعليق');
-    expect(saved.author, 'عميل Servick');
+    expect(saved.author, 'عميل رابط');
     expect(saved.createdAt, now);
     expect(
       model.submitRating(requestId: request.id, stars: 4, comment: 'مرة ثانية'),

@@ -80,7 +80,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 800));
       await tester.pumpAndSettle();
 
-      expect(find.text('لوحة تحكم المالك | Servick Admin'), findsOneWidget);
+      expect(find.text('لوحة تحكم المالك | رابط'), findsOneWidget);
       expect(find.text('خالد أحمد عسيري'), findsOneWidget);
       expect(find.textContaining('أبها'), findsOneWidget);
       expect(find.textContaining('055'), findsWidgets);
@@ -137,7 +137,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
-    expect(find.text('لوحة تحكم المالك | Servick Admin'), findsOneWidget);
+    expect(find.text('لوحة تحكم المالك | رابط'), findsOneWidget);
     expect(find.text('نورة الشهري'), findsWidgets);
     expect(find.text('موافقة'), findsOneWidget);
     expect(tester.takeException(), isNull);

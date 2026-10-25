@@ -64,7 +64,7 @@ class ProviderDashboardScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
           children: [
             const Text(
-              'تم تسجيل الدخول بنجاح أهلاً بك في Servick',
+              'تم تسجيل الدخول بنجاح أهلاً بك في رابط',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
             ),
             const SizedBox(height: 12),
@@ -82,7 +82,7 @@ class ProviderDashboardScreen extends StatelessWidget {
             DeskInbox(
               audience: 'provider',
               recipientId: session.id,
-              title: 'رسائل من إدارة سيرفيسك',
+              title: 'رسائل من إدارة رابط',
             ),
             Material(
               color: Colors.white,

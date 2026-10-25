@@ -275,7 +275,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(
-      find.text('تم تجديد اشتراكك السنوي بنجاح! شكراً لانضمامك لـ Servick'),
+      find.text('تم تجديد اشتراكك السنوي بنجاح! شكراً لانضمامك لرابط'),
       findsOneWidget,
     );
     expect(find.text('حسابك مفعل وجاهز لاستقبال الطلبات'), findsOneWidget);

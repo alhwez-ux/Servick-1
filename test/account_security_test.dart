@@ -238,7 +238,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
-    expect(find.text('لوحة تحكم المالك | Servick Admin'), findsOneWidget);
+    expect(find.text('لوحة تحكم المالك | رابط'), findsOneWidget);
   });
 
   testWidgets('client recovery shows the temporary password when mail fails', (

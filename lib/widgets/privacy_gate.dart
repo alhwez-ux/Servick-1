@@ -52,7 +52,7 @@ class _PrivacyConsentDialogState extends State<PrivacyConsentDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'تقتصر منصة سيرفيسك على كونها وسيطاً يربط العميل بمزود الخدمة. ليست مزوداً مباشراً للخدمة، ولا تتحمل المسؤولية عن جودة التنفيذ أو الأخطاء المهنية أو النزاعات بين الطرفين.',
+                'تقتصر منصة رابط على كونها وسيطاً يربط العميل بمزود الخدمة. ليست مزوداً مباشراً للخدمة، ولا تتحمل المسؤولية عن جودة التنفيذ أو الأخطاء المهنية أو النزاعات بين الطرفين.',
                 style: TextStyle(height: 1.6),
               ),
               const SizedBox(height: 10),

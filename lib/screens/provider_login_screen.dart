@@ -124,7 +124,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
             ),
           ),
           content: const Text(
-            'عذراً، اشتراكك السنوي في منصة Servick قد انتهى. يرجى سداد رسوم الاشتراك السنوي لتفعيل حسابك واستقبال طلبات العملاء مجدداً.',
+            'عذراً، اشتراكك السنوي في منصة رابط قد انتهى. يرجى سداد رسوم الاشتراك السنوي لتفعيل حسابك واستقبال طلبات العملاء مجدداً.',
             style: TextStyle(fontSize: 14, height: 1.5),
           ),
           actions: [

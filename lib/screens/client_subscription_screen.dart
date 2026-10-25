@@ -44,7 +44,7 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
     messenger.clearSnackBars();
     messenger.showSnackBar(
       const SnackBar(
-        content: Text('تم تفعيل باقتك بنجاح في Servick! مرحباً بك.'),
+        content: Text('تم تفعيل باقتك بنجاح في رابط! مرحباً بك.'),
       ),
     );
     navigator.pop();
@@ -57,7 +57,7 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'باقات اشتراك العملاء | Servick',
+          'باقات اشتراك العملاء | رابط',
           style: TextStyle(fontFamily: 'Cairo', fontSize: 16),
         ),
         backgroundColor: ServickColors.navy,

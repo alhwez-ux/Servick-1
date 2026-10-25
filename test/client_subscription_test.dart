@@ -86,7 +86,7 @@ void main() {
     await tester.tap(find.byKey(const Key('open-client-plans')));
     await tester.pumpAndSettle();
 
-    expect(find.text('باقات اشتراك العملاء | Servick'), findsOneWidget);
+    expect(find.text('باقات اشتراك العملاء | رابط'), findsOneWidget);
     expect(find.text('باقة المالك الخاصة'), findsNothing);
     expect(find.text('الاشتراك الشهري'), findsOneWidget);
     expect(find.text('اشتراك 3 أشهر'), findsOneWidget);
@@ -95,7 +95,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('confirm-client-plan')));
     await tester.pump();
-    expect(find.text('باقات اشتراك العملاء | Servick'), findsOneWidget);
+    expect(find.text('باقات اشتراك العملاء | رابط'), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(const Key('plan-annual')));
     await tester.tap(find.byKey(const Key('plan-annual')));
@@ -112,10 +112,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
 
     expect(
-      find.text('تم تفعيل باقتك بنجاح في Servick! مرحباً بك.'),
+      find.text('تم تفعيل باقتك بنجاح في رابط! مرحباً بك.'),
       findsOneWidget,
     );
-    expect(find.text('باقات اشتراك العملاء | Servick'), findsNothing);
+    expect(find.text('باقات اشتراك العملاء | رابط'), findsNothing);
     expect(find.byKey(const Key('client-plan-note')), findsOneWidget);
     expect(find.textContaining('اشتراك 12 شهراً'), findsOneWidget);
     expect(find.textContaining('2027/10/18'), findsOneWidget);
@@ -151,7 +151,7 @@ void main() {
     await tester.tap(find.byKey(const Key('accept-privacy')));
     await tester.pumpAndSettle();
 
-    expect(find.text('باقات اشتراك العملاء | Servick'), findsNothing);
+    expect(find.text('باقات اشتراك العملاء | رابط'), findsNothing);
     expect(model.clientSubscription(demoClientId)?.planId, 'free_admin');
   });
 }

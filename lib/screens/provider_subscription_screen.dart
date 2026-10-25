@@ -47,7 +47,7 @@ class _ProviderSubscriptionScreenState
             style: TextStyle(fontWeight: FontWeight.w700),
           ),
           content: const Text(
-            'تلك الخطوة ستقوم بتحويلك لبوابة الدفع الآمنة لسداد رسوم الاشتراك السنوي لباقة مزودي الخدمات في Servick.\n\n(رسوم الاشتراك السنوي: تمكنك من استقبال طلبات غير محدودة بدون عمولة).',
+            'تلك الخطوة ستقوم بتحويلك لبوابة الدفع الآمنة لسداد رسوم الاشتراك السنوي لباقة مزودي الخدمات في رابط.\n\n(رسوم الاشتراك السنوي: تمكنك من استقبال طلبات غير محدودة بدون عمولة).',
             style: TextStyle(fontSize: 13, height: 1.5),
           ),
           actions: [
@@ -80,7 +80,7 @@ class _ProviderSubscriptionScreenState
     if (!mounted) return;
     final message = renewed == null
         ? 'حدث خطأ أثناء التحديث: تعذر العثور على حساب المزود'
-        : 'تم تجديد اشتراكك السنوي بنجاح! شكراً لانضمامك لـ Servick';
+        : 'تم تجديد اشتراكك السنوي بنجاح! شكراً لانضمامك لرابط';
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
@@ -98,7 +98,7 @@ class _ProviderSubscriptionScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'إدارة الاشتراك السنوي | Servick',
+          'إدارة الاشتراك السنوي | رابط',
           style: TextStyle(fontFamily: 'Cairo', fontSize: 16),
         ),
         backgroundColor: ServickColors.navy,

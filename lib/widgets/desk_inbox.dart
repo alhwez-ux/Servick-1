@@ -9,7 +9,7 @@ class DeskInbox extends StatelessWidget {
     super.key,
     required this.audience,
     required this.recipientId,
-    this.title = 'رسائل إدارة سيرفيسك',
+    this.title = 'رسائل إدارة رابط',
   });
 
   final String audience;

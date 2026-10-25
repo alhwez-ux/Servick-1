@@ -441,7 +441,7 @@ class AppModel extends ChangeNotifier {
     required bool assignNow,
     String? technicianId,
     String? clientId,
-    String clientName = 'عميل Servick',
+    String clientName = 'عميل رابط',
   }) {
     final normalized = normalizeSaudiMobile(phone);
     assert(
@@ -1042,7 +1042,7 @@ class AppModel extends ChangeNotifier {
     required String requestId,
     required int stars,
     required String comment,
-    String author = 'عميل Servick',
+    String author = 'عميل رابط',
   }) {
     if (stars < 1 || stars > 5) return 'اختر تقييماً من نجمة إلى خمس';
     final request = requestById(requestId);
@@ -1059,7 +1059,7 @@ class AppModel extends ChangeNotifier {
         technicianId: technicianId,
         stars: stars,
         comment: comment.trim().isEmpty ? 'بدون تعليق' : comment.trim(),
-        author: author.trim().isEmpty ? 'عميل Servick' : author.trim(),
+        author: author.trim().isEmpty ? 'عميل رابط' : author.trim(),
         createdAt: _now(),
       ),
     );
@@ -1366,10 +1366,10 @@ class AppModel extends ChangeNotifier {
         etaMinutes: 30,
         startingPrice: 0,
         phone: normalized,
-        about: about.trim().isEmpty ? 'مقدم خدمة مسجّل في سيرفيسك' : about.trim(),
+        about: about.trim().isEmpty ? 'مقدم خدمة مسجّل في رابط' : about.trim(),
         services: const [],
         review: const CustomerReview(
-          author: 'سيرفيسك',
+          author: 'رابط',
           text: 'لا توجد تقييمات بعد.',
         ),
       ),

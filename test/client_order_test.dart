@@ -72,7 +72,7 @@ void main() {
     await tester.tap(find.byKey(const Key('open-client-order')));
     await tester.pumpAndSettle();
 
-    expect(find.text('طلب خدمة صيانة عاجلة | Servick'), findsOneWidget);
+    expect(find.text('طلب خدمة صيانة عاجلة | رابط'), findsOneWidget);
     expect(find.text('ميكانيكي سيارات بنزين'), findsOneWidget);
     expect(find.text('كهربائي منازل'), findsOneWidget);
 
@@ -85,7 +85,7 @@ void main() {
       find.text('الرجاء اختيار نوع الخدمة المطلوبة أولاً'),
       findsOneWidget,
     );
-    expect(find.text('طلب خدمة صيانة عاجلة | Servick'), findsOneWidget);
+    expect(find.text('طلب خدمة صيانة عاجلة | رابط'), findsOneWidget);
   });
 
   testWidgets(
