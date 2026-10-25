@@ -48,6 +48,27 @@ void main() {
     }
   });
 
+  testWidgets('a signed-in client sees the payment warning', (tester) async {
+    final model = AppModel();
+    seedClient(model, signIn: true);
+    for (final size in const [Size(390, 844), Size(1280, 800)]) {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(ServickApp(model: model));
+      await tester.pumpAndSettle();
+
+      expect(find.text('إنشاء حساب'), findsNothing);
+      expect(find.byKey(const Key('client-payment-warning')), findsOneWidget);
+      expect(
+        find.text('لا تقم بتحويل أي مبلغ مالي قبل تلقي الخدمة من مقدم الخدمة'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('changing city reveals the empty chinese category', (
     tester,
   ) async {

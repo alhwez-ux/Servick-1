@@ -275,6 +275,8 @@ class _ClientAccountCard extends StatelessWidget {
                 '${formatPhone(session.phone)} · ${session.city}',
                 style: const TextStyle(color: ServickColors.muted),
               ),
+              const SizedBox(height: 12),
+              const _PaymentWarning(),
               PasswordChangeCard(audience: 'client', accountId: session.id),
               AccountDeletionButton(audience: 'client', accountId: session.id),
               TextButton(
@@ -283,6 +285,33 @@ class _ClientAccountCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PaymentWarning extends StatelessWidget {
+  const _PaymentWarning();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('client-payment-warning'),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: ServickColors.emergency,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Text(
+        'لا تقم بتحويل أي مبلغ مالي قبل تلقي الخدمة من مقدم الخدمة',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+          height: 1.45,
         ),
       ),
     );
