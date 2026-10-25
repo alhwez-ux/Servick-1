@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/service_photo.dart';
 import '../models/models.dart';
 
 /// Decode only the pixels the circle needs (at most 256, matching the asset).
@@ -37,29 +38,43 @@ class ServiceArtwork extends StatelessWidget {
     final side = width != null && width!.isFinite ? width! : height;
     final radius = borderRadius <= 0 ? 0.0 : side / 2;
     final cache = serviceImageCacheSize(context, side);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: Image.asset(
-        asset,
-        key: Key('service-image-${category.id}'),
+    final key = Key('service-image-${category.id}');
+    final uploaded = servicePhotoBytes(asset);
+    final fallback = ColoredBox(
+      color: category.color.withValues(alpha: 0.12),
+      child: SizedBox(
         width: side,
         height: height,
-        fit: BoxFit.cover,
-        filterQuality: FilterQuality.medium,
-        cacheWidth: cache,
-        cacheHeight: cache,
-        semanticLabel: category.title,
-        errorBuilder: (context, error, stackTrace) {
-          return ColoredBox(
-            color: category.color.withValues(alpha: 0.12),
-            child: SizedBox(
-              width: width,
-              height: height,
-              child: Icon(category.icon, color: category.color),
-            ),
-          );
-        },
+        child: Icon(category.icon, color: category.color),
       ),
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: uploaded == null
+          ? Image.asset(
+              asset,
+              key: key,
+              width: side,
+              height: height,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.medium,
+              cacheWidth: cache,
+              cacheHeight: cache,
+              semanticLabel: category.title,
+              errorBuilder: (context, error, stackTrace) => fallback,
+            )
+          : Image.memory(
+              uploaded,
+              key: key,
+              width: side,
+              height: height,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.medium,
+              cacheWidth: cache,
+              cacheHeight: cache,
+              semanticLabel: category.title,
+              errorBuilder: (context, error, stackTrace) => fallback,
+            ),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'data/order_categories.dart';
 import 'data/password_hash.dart';
 import 'data/phone.dart';
 import 'data/providers.dart';
+import 'data/service_photo.dart';
 import 'data/service_pictures.dart';
 import 'data/shared_snapshot.dart';
 import 'data/shared_store.dart';
@@ -279,6 +280,8 @@ class AppModel extends ChangeNotifier {
     required String title,
     required String subtitle,
     String? pictureId,
+    String? imageData,
+    bool withoutImage = false,
   }) {
     final cleanTitle = title.trim();
     if (cleanTitle.isEmpty) return 'اكتب اسم الخدمة';
@@ -293,6 +296,8 @@ class AppModel extends ChangeNotifier {
     if (cleanSubtitle.length > serviceSubtitleMaxLength) {
       return 'الوصف أطول من ثمانين حرفاً';
     }
+    final imageError = _photoChoice(imageData);
+    if (imageData != null && imageError != null) return imageError;
     _serviceSequence += 1;
     const colors = <Color>[
       Color(0xFF1E3A8A),
@@ -310,6 +315,14 @@ class AppModel extends ChangeNotifier {
     final picture = pictureId == null
         ? pictureForTitle(cleanTitle)
         : servicePictureById(pictureId);
+    final String? image;
+    if (imageData != null) {
+      image = imageData;
+    } else if (withoutImage) {
+      image = null;
+    } else {
+      image = picture.asset;
+    }
     _extraCategories.add(
       ServiceCategory(
         id: 'custom-$_serviceSequence',
@@ -317,10 +330,52 @@ class AppModel extends ChangeNotifier {
         subtitle: cleanSubtitle,
         icon: icons[slot],
         color: colors[slot],
-        imageAsset: picture.asset,
+        imageAsset: image,
       ),
     );
     _touch();
+    return null;
+  }
+
+  String? updateServicePhoto(
+    String id, {
+    String? imageData,
+    bool remove = false,
+  }) {
+    if (categories.any((category) => category.id == id)) {
+      return 'لا يمكن تغيير صورة الخدمات الأساسية من هنا';
+    }
+    final index = _extraCategories.indexWhere((category) => category.id == id);
+    if (index < 0) return 'الخدمة غير موجودة';
+    final current = _extraCategories[index];
+    final String? next;
+    if (remove) {
+      next = null;
+    } else {
+      final imageError = _photoChoice(imageData);
+      if (imageError != null) return imageError;
+      next = imageData;
+    }
+    _extraCategories[index] = ServiceCategory(
+      id: current.id,
+      title: current.title,
+      subtitle: current.subtitle,
+      icon: current.icon,
+      color: current.color,
+      imageAsset: next,
+    );
+    _touch();
+    return null;
+  }
+
+  String? _photoChoice(String? imageData) {
+    if (imageData == null || !isUploadedServicePhoto(imageData)) {
+      return 'الصورة غير صالحة';
+    }
+    if (imageData.length > maxServicePhotoUriLength) {
+      return 'الصورة أكبر من الحجم المناسب';
+    }
+    if (servicePhotoBytes(imageData) == null) return 'الصورة غير صالحة';
     return null;
   }
 

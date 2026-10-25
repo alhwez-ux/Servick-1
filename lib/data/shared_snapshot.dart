@@ -176,7 +176,7 @@ class SharedSnapshot {
             'subtitle': service.subtitle,
             'icon': service.icon.codePoint,
             'color': service.color.toARGB32(),
-            'image': service.imageAsset,
+            'image': service.imageAsset ?? '',
           },
       ],
       'suggestions': [
@@ -361,7 +361,7 @@ SharedSnapshot mergeSnapshots({
       toJson: (item) => {
         'title': item.title,
         'subtitle': item.subtitle,
-        'image': item.imageAsset,
+        'image': item.imageAsset ?? '',
       },
     ),
     suggestions: _mergeById(
@@ -703,19 +703,21 @@ IconData _iconFrom(Object? value) {
   return Icons.home_repair_service;
 }
 
+String? _serviceImage(Object? stored, String title) {
+  if (stored == null) return pictureForTitle(title).asset;
+  if (stored is! String || stored.isEmpty) return null;
+  return stored;
+}
+
 ServiceCategory _service(Map<String, dynamic> json) {
   final title = json['title'] as String;
-  final matched = pictureForTitle(title);
-  final stored = json['image'] as String?;
   return ServiceCategory(
     id: json['id'] as String,
     title: title,
     subtitle: json['subtitle'] as String,
     icon: _iconFrom(json['icon']),
     color: Color(_int(json['color'])),
-    imageAsset: matched.id == 'general'
-        ? (stored ?? matched.asset)
-        : matched.asset,
+    imageAsset: _serviceImage(json['image'], title),
   );
 }
 
