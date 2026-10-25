@@ -51,7 +51,7 @@ class ServickApp extends StatelessWidget {
     return AppScope(
       model: model,
       child: MaterialApp(
-        title: 'سيرفيسك | Servick',
+        title: 'رابط | RABITT',
         debugShowCheckedModeBanner: false,
         locale: const Locale('ar'),
         supportedLocales: const [Locale('ar')],
