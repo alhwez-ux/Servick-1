@@ -166,7 +166,7 @@ class ServickBottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 62,
+          height: 74,
           child: Row(
             children: [
               _NavItem(
@@ -188,7 +188,7 @@ class ServickBottomNav extends StatelessWidget {
               _NavItem(
                 itemKey: const Key('nav-provider'),
                 icon: Icons.engineering_outlined,
-                label: 'الحرفي',
+                label: 'مقدم الخدمة',
                 selected: name == ServickRoutes.providerLogin,
                 onTap: () => _open(context, ServickRoutes.providerLogin),
               ),
@@ -243,11 +243,13 @@ class _NavItem extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 label,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: color,
                   fontSize: 11,
+                  height: 1.15,
                   fontWeight: FontWeight.w700,
                 ),
               ),

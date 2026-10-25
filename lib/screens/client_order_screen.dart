@@ -76,7 +76,7 @@ class _ClientOrderScreenState extends State<ClientOrderScreen> {
             style: TextStyle(fontWeight: FontWeight.w700, color: Colors.green),
           ),
           content: const Text(
-            'تم نشر طلبك إلى أقرب الحرفيين المتاحين في منطقتك. سيتم إشعارك فور قبول الحرفي للطلب وتوجهه إليك.',
+            'تم نشر طلبك إلى أقرب مقدمي الخدمات المتاحين في منطقتك. سيتم إشعارك فور قبول مقدم الخدمة للطلب وتوجهه إليك.',
             style: TextStyle(fontSize: 13, height: 1.5),
           ),
           actions: [
@@ -176,7 +176,7 @@ class _ClientOrderScreenState extends State<ClientOrderScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'يصل الطلب معلّقاً للحرفيين في مدينتك. لا يُرسل إلى خادم خارجي.',
+                'يصل الطلب معلّقاً لمقدمي الخدمات في مدينتك. لا يُرسل إلى خادم خارجي.',
                 style: TextStyle(
                   color: ServickColors.muted,
                   fontSize: 12,

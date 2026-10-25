@@ -101,7 +101,7 @@ void main() {
 
       expect(model.renewSubscription(account.id), isNotNull);
       expect(model.invoices.first.amount, 550);
-      expect(model.invoices.first.title, 'اشتراك الحرفي السنوي');
+      expect(model.invoices.first.title, 'اشتراك مقدم الخدمة السنوي');
     },
   );
 

@@ -113,7 +113,7 @@ class AdminDashboardScreen extends StatelessWidget {
               const _AccountDirectory(),
               const SizedBox(height: 24),
               const Text(
-                'طلبات الحرفيين بانتظار الاعتماد وتفعيل الاشتراك',
+                'طلبات مقدمي الخدمات بانتظار الاعتماد وتفعيل الاشتراك',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -146,7 +146,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
   Widget _providersCard(int count) {
     return _StatCard(
-      title: 'الحرفيون المسجلون',
+      title: 'مقدمو الخدمات المسجلون',
       countKey: const Key('stat-providers'),
       count: count,
       icon: Icons.engineering,
@@ -463,7 +463,7 @@ class _DeletionRequests extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${request.audience == 'provider' ? 'حرفي' : 'عميل'} · ${formatPhone(request.phone)}',
+                      '${request.audience == 'provider' ? 'مقدم خدمة' : 'عميل'} · ${formatPhone(request.phone)}',
                       style: const TextStyle(
                         color: ServickColors.muted,
                         height: 1.4,
@@ -518,7 +518,7 @@ class _AccountDirectory extends StatelessWidget {
         const SizedBox(height: 8),
         if (model.clientAccounts.isEmpty && active.isEmpty)
           const Text(
-            'لا توجد حسابات بعد. تظهر هنا بعد تسجيل العملاء والحرفيين.',
+            'لا توجد حسابات بعد. تظهر هنا بعد تسجيل العملاء ومقدمي الخدمات.',
             key: Key('accounts-empty'),
             style: TextStyle(color: ServickColors.muted, height: 1.5),
           ),
@@ -544,7 +544,7 @@ class _AccountDirectory extends StatelessWidget {
             title: Text(
               model.technicianById(account.technicianId)?.name ?? account.phone,
             ),
-            subtitle: Text('حرفي · ${formatPhone(account.phone)}'),
+            subtitle: Text('مقدم خدمة · ${formatPhone(account.phone)}'),
             trailing: IconButton(
               key: Key('owner-delete-provider-${account.id}'),
               tooltip: 'حذف الحساب',
@@ -570,7 +570,7 @@ class _PendingProviderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final technician = AppScope.of(context)
         .technicianById(account.technicianId);
-    final name = technician?.name ?? 'حرفي بدون اسم';
+    final name = technician?.name ?? 'مقدم خدمة بدون اسم';
     final city = technician?.city ?? 'خميس مشيط';
 
     return Card(
@@ -642,7 +642,7 @@ class _PendingProviderCard extends StatelessWidget {
         SnackBar(
           content: Text(
             error == null
-                ? 'تم تفعيل اشتراك الحرفي بنجاح!'
+                ? 'تم تفعيل اشتراك مقدم الخدمة بنجاح!'
                 : 'خطأ في التفعيل: $error',
           ),
         ),

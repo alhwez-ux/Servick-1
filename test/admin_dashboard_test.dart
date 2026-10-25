@@ -24,7 +24,7 @@ void main() {
     expect(model.expiredProviders.map((account) => account.id), [expired.id]);
     expect(model.providerSession, isNull);
 
-    expect(model.activateProviderSubscription('missing'), 'الحرفي غير موجود');
+    expect(model.activateProviderSubscription('missing'), 'مقدم الخدمة غير موجود');
 
     final before = model.loginProvider(
       phone: '0554102206',
@@ -102,7 +102,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
-      expect(find.text('تم تفعيل اشتراك الحرفي بنجاح!'), findsOneWidget);
+      expect(find.text('تم تفعيل اشتراك مقدم الخدمة بنجاح!'), findsOneWidget);
       expect(find.byKey(const Key('admin-empty')), findsOneWidget);
       expect(find.byKey(Key('activate-provider-${expired.id}')), findsNothing);
       expect(model.providerById(expired.id)!.subscriptionStatus, 'active');

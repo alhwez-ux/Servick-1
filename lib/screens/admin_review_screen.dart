@@ -44,7 +44,7 @@ class _AdminReviewScreenState extends State<AdminReviewScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'هذه شاشة المالك لمراجعة المحتوى كما يظهر للعميل والحرفي. افتح أي شاشة، ثم سجّل في الأسفل ما يحتاج تعديلاً أو إضافة.',
+                'هذه شاشة المالك لمراجعة المحتوى كما يظهر للعميل ومقدم الخدمة. افتح أي شاشة، ثم سجّل في الأسفل ما يحتاج تعديلاً أو إضافة.',
                 style: TextStyle(color: ServickColors.muted, height: 1.6),
               ),
               const SizedBox(height: 20),
@@ -179,7 +179,7 @@ class _PreviewLinks extends StatelessWidget {
       ),
       _PreviewLink(
         keyName: 'preview-provider',
-        label: 'دخول الحرفي',
+        label: 'دخول مقدم الخدمة',
         icon: Icons.engineering_rounded,
         onTap: () {
           Navigator.of(context).pushNamed(ServickRoutes.providerLogin);

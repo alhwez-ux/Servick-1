@@ -4,7 +4,7 @@ const demoAdminPasscode = '7711';
 /// Areas the owner can attach a change request to.
 const ownerSuggestionAreas = <String, String>{
   'ui': 'الواجهة',
-  'providers': 'الحرفيون',
+  'providers': 'مقدمو الخدمات',
   'orders': 'الطلبات',
   'plans': 'الاشتراكات',
   'addition': 'إضافة جديدة',

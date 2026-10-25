@@ -252,7 +252,7 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(
-                  labelText: 'رسوم اشتراك الحرفي السنوي',
+                  labelText: 'رسوم اشتراك مقدم الخدمة السنوي',
                   suffixText: 'ر.س',
                 ),
               ),
@@ -633,7 +633,7 @@ class _InvoicePreview extends StatelessWidget {
           const SizedBox(height: 6),
           Text('الرقم ${isolateLtr(number)}'),
           Text(
-            'رسوم الحرفي السنوية ${isolateLtr('${billing.providerAnnualFee}')} ر.س',
+            'رسوم مقدم الخدمة السنوية ${isolateLtr('${billing.providerAnnualFee}')} ر.س',
           ),
           Text(billing.note, style: const TextStyle(height: 1.5)),
         ],

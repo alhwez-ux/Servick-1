@@ -142,7 +142,7 @@ class AppModel extends ChangeNotifier {
           DeskRecipient(
             id: account.id,
             audience: 'provider',
-            name: technicianById(account.technicianId)?.name ?? 'حرفي بدون اسم',
+            name: technicianById(account.technicianId)?.name ?? 'مقدم خدمة بدون اسم',
             detail: account.phone,
           ),
       ];
@@ -595,7 +595,7 @@ class AppModel extends ChangeNotifier {
     final technician = technicianById(renewed.technicianId);
     _issueInvoice(
       partyName: technician?.name ?? 'مزود الخدمة',
-      title: 'اشتراك الحرفي السنوي',
+      title: 'اشتراك مقدم الخدمة السنوي',
       amount: providerAnnualFee,
     );
     _touch();
@@ -626,7 +626,7 @@ class AppModel extends ChangeNotifier {
   }) {
     final fee = int.tryParse(providerFeeRaw.trim());
     if (fee == null || fee < 0 || fee > 9999) {
-      return 'أدخل رسوم اشتراك الحرفي من 0 إلى 9999';
+      return 'أدخل رسوم اشتراك مقدم الخدمة من 0 إلى 9999';
     }
     final prices = <String, int>{};
     for (final plan in clientPlans.where((plan) => !plan.adminOnly)) {
@@ -947,7 +947,7 @@ class AppModel extends ChangeNotifier {
 
   String? activateProviderSubscription(String providerId) {
     final index = _providers.indexWhere((account) => account.id == providerId);
-    if (index < 0) return 'الحرفي غير موجود';
+    if (index < 0) return 'مقدم الخدمة غير موجود';
     final activated = _providers[index].copyWith(
       subscriptionStatus: 'active',
       subscriptionExpiry: _now().add(
@@ -1366,7 +1366,7 @@ class AppModel extends ChangeNotifier {
         etaMinutes: 30,
         startingPrice: 0,
         phone: normalized,
-        about: about.trim().isEmpty ? 'حرفي مسجّل في سيرفيسك' : about.trim(),
+        about: about.trim().isEmpty ? 'مقدم خدمة مسجّل في سيرفيسك' : about.trim(),
         services: const [],
         review: const CustomerReview(
           author: 'سيرفيسك',
