@@ -220,7 +220,7 @@ class _EmptyTechnicians extends StatelessWidget {
           Text(
             busyOnly
                 ? 'الفنيون المسجّلون في $city مشغولون الآن.'
-                : 'لا يوجد فنيون لخدمة ${category.title} في $city.',
+                : 'في انتظار مقدمي خدمة ${category.title} في $city.',
             textAlign: TextAlign.center,
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
           ),
