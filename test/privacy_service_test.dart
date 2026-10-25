@@ -35,6 +35,11 @@ void main() {
       model.addedServices.last.imageAsset,
       pictureForTitle('خدمة خاصة').asset,
     );
+    expect(pictureForTitle('غسيل السيارات').id, 'carwash');
+    expect(pictureForTitle('غسيل الملابس').id, 'laundry');
+    expect(pictureForTitle('نظافة المباني وخزانات المياه').id, 'cleaning');
+    expect(pictureForTitle('سطحات نقل سيارات vip').id, 'tow');
+    expect(pictureForTitle('الإرشاد السياحي').id, 'tourism');
     expect(
       model.addService(title: 'صيانة مكيفات', subtitle: 'مرة ثانية'),
       'هذه الخدمة موجودة',

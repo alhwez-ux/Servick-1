@@ -26,12 +26,14 @@ class ServiceArtwork extends StatelessWidget {
         child: Icon(category.icon, size: height * 0.54, color: category.color),
       );
     }
+    final side = width != null && width!.isFinite ? width! : height;
+    final radius = borderRadius <= 0 ? 0.0 : side / 2;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
+      borderRadius: BorderRadius.circular(radius),
       child: Image.asset(
         asset,
         key: Key('service-image-${category.id}'),
-        width: width,
+        width: side,
         height: height,
         fit: BoxFit.cover,
         semanticLabel: category.title,

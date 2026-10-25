@@ -19,7 +19,9 @@ void main() {
     expect(find.text('عطل طارئ على الطريق؟'), findsOneWidget);
     expect(find.text('طلب طوارئ'), findsOneWidget);
     expect(find.text('اختر نوع الخدمة المطلوبة:'), findsOneWidget);
-    expect(find.text('سيرفيسك'), findsOneWidget);
+    expect(find.bySemanticsLabel('شعار رابط'), findsOneWidget);
+    expect(find.byKey(const Key('service-image-petrol')), findsOneWidget);
+    expect(find.byKey(const Key('service-image-home_elec')), findsOneWidget);
 
     for (final id in [
       'petrol',

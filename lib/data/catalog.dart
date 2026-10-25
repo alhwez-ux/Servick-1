@@ -9,6 +9,7 @@ const categories = <ServiceCategory>[
     subtitle: 'محركات البنزين والصيانة الدورية',
     icon: Icons.local_gas_station,
     color: Color(0xFF2563EB),
+    imageAsset: 'assets/services/petrol.jpg',
   ),
   ServiceCategory(
     id: 'diesel',
@@ -16,6 +17,7 @@ const categories = <ServiceCategory>[
     subtitle: 'ديزل خفيف وشاصات',
     icon: Icons.car_repair,
     color: Color(0xFFEA580C),
+    imageAsset: 'assets/services/diesel.jpg',
   ),
   ServiceCategory(
     id: 'chinese',
@@ -23,6 +25,7 @@ const categories = <ServiceCategory>[
     subtitle: 'شانجان، جيلي، ام جي، وشيري',
     icon: Icons.directions_car,
     color: Color(0xFF0F766E),
+    imageAsset: 'assets/services/chinese.jpg',
   ),
   ServiceCategory(
     id: 'equipment',
@@ -30,6 +33,7 @@ const categories = <ServiceCategory>[
     subtitle: 'مولدات ومعدات المواقع',
     icon: Icons.engineering,
     color: Color(0xFFB45309),
+    imageAsset: 'assets/services/equipment.jpg',
   ),
   ServiceCategory(
     id: 'auto_elec',
@@ -37,6 +41,7 @@ const categories = <ServiceCategory>[
     subtitle: 'بطارية ودينمو وأنظمة التشغيل',
     icon: Icons.bolt,
     color: Color(0xFFDC2626),
+    imageAsset: 'assets/services/auto_elec.jpg',
   ),
   ServiceCategory(
     id: 'home_elec',
@@ -44,6 +49,7 @@ const categories = <ServiceCategory>[
     subtitle: 'قواطع وإضاءة وأعطال البيوت',
     icon: Icons.electrical_services,
     color: Color(0xFF4338CA),
+    imageAsset: 'assets/services/home_elec.jpg',
   ),
 ];
 

@@ -8,6 +8,7 @@ import '../models/models.dart';
 import '../models/order.dart';
 import '../models/provider.dart';
 import 'providers.dart';
+import 'service_pictures.dart';
 
 class SharedSnapshot {
   const SharedSnapshot({
@@ -703,13 +704,18 @@ IconData _iconFrom(Object? value) {
 }
 
 ServiceCategory _service(Map<String, dynamic> json) {
+  final title = json['title'] as String;
+  final matched = pictureForTitle(title);
+  final stored = json['image'] as String?;
   return ServiceCategory(
     id: json['id'] as String,
-    title: json['title'] as String,
+    title: title,
     subtitle: json['subtitle'] as String,
     icon: _iconFrom(json['icon']),
     color: Color(_int(json['color'])),
-    imageAsset: json['image'] as String?,
+    imageAsset: matched.id == 'general'
+        ? (stored ?? matched.asset)
+        : matched.asset,
   );
 }
 

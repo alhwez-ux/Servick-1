@@ -54,31 +54,18 @@ class CategoryCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (category.imageAsset != null)
-                ServiceArtwork(
+              const SizedBox(height: 18),
+              Center(
+                child: ServiceArtwork(
                   category: category,
-                  height: 104,
-                  width: double.infinity,
-                  borderRadius: 0,
-                )
-              else
-                const SizedBox(height: 14),
+                  height: 84,
+                  borderRadius: 42,
+                ),
+              ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 14),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
                 child: Column(
                   children: [
-                    if (category.imageAsset == null) ...[
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: category.color.withValues(alpha: 0.12),
-                        child: Icon(
-                          category.icon,
-                          size: 30,
-                          color: category.color,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
                     Text(
                       category.title,
                       maxLines: 2,
