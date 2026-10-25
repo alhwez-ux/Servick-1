@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_scope.dart';
+import '../widgets/account_security.dart';
 import '../widgets/confirm_action.dart';
 import '../data/format.dart';
 import '../models/provider.dart';
@@ -89,6 +90,8 @@ class AdminDashboardScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16),
+              const PasswordChangeCard(audience: 'owner'),
+              const SizedBox(height: 8),
               const _FreeMonthsCard(),
               const SizedBox(height: 16),
               if (wide)

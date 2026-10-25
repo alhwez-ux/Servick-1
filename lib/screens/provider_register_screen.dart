@@ -16,6 +16,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _password = TextEditingController();
+  final _email = TextEditingController();
   final _about = TextEditingController();
   var _city = cities.first;
   var _categoryId = 'petrol';
@@ -26,6 +27,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
     _name.dispose();
     _phone.dispose();
     _password.dispose();
+    _email.dispose();
     _about.dispose();
     super.dispose();
   }
@@ -49,6 +51,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
       city: _city,
       categoryId: _categoryId,
       password: _password.text,
+      email: _email.text,
       about: _about.text,
     );
     if (error != null) {
@@ -65,7 +68,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
   Widget build(BuildContext context) {
     final categories = AppScope.of(context).serviceCategories;
     return ServickScaffold(
-      title: 'إنشاء حساب حرفي',
+      title: 'تسجيل مقدم خدمة',
       showCity: false,
       body: ServickFrame(
         maxWidth: 560,
@@ -97,6 +100,17 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
               decoration: const InputDecoration(
                 labelText: 'كلمة المرور',
                 helperText: 'ستة أحرف على الأقل',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('provider-reg-email'),
+              controller: _email,
+              keyboardType: TextInputType.emailAddress,
+              textDirection: TextDirection.ltr,
+              decoration: const InputDecoration(
+                labelText: 'البريد الإلكتروني',
+                helperText: 'يُستخدم لاسترجاع كلمة المرور',
               ),
             ),
             const SizedBox(height: 12),

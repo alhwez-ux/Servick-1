@@ -11,6 +11,7 @@ import '../routes.dart';
 import '../theme/servick_theme.dart';
 import 'client_auth_screen.dart';
 import '../widgets/account_deletion_button.dart';
+import '../widgets/account_security.dart';
 import '../widgets/category_card.dart';
 import '../widgets/complimentary_notice.dart';
 import '../widgets/desk_inbox.dart';
@@ -274,6 +275,7 @@ class _ClientAccountCard extends StatelessWidget {
                 '${formatPhone(session.phone)} · ${session.city}',
                 style: const TextStyle(color: ServickColors.muted),
               ),
+              PasswordChangeCard(audience: 'client', accountId: session.id),
               AccountDeletionButton(audience: 'client', accountId: session.id),
               TextButton(
                 onPressed: model.logoutClient,

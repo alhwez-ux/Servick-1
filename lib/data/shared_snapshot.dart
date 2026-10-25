@@ -36,6 +36,9 @@ class SharedSnapshot {
     required this.deletionSequence,
     required this.requestSequence,
     required this.clientOrderSequence,
+    this.ownerEmail = '',
+    this.ownerPasswordHash = '',
+    this.ownerPasswordSalt = '',
   });
 
   final int revision;
@@ -62,6 +65,9 @@ class SharedSnapshot {
   final int deletionSequence;
   final int requestSequence;
   final int clientOrderSequence;
+  final String ownerEmail;
+  final String ownerPasswordHash;
+  final String ownerPasswordSalt;
 
   static SharedSnapshot empty() {
     return SharedSnapshot(
@@ -158,6 +164,9 @@ class SharedSnapshot {
             ? 1040
             : _int(json['requestSequence']),
         clientOrderSequence: _int(json['clientOrderSequence']),
+        ownerEmail: _owner(json['owner']).email,
+        ownerPasswordHash: _owner(json['owner']).hash,
+        ownerPasswordSalt: _owner(json['owner']).salt,
       );
     } catch (_) {
       return null;
@@ -210,6 +219,7 @@ class SharedSnapshot {
             'city': client.city,
             'passwordHash': client.passwordHash,
             'passwordSalt': client.passwordSalt,
+            'email': client.email,
             'at': client.createdAt.toUtc().toIso8601String(),
           },
       ],
@@ -221,6 +231,7 @@ class SharedSnapshot {
             'phone': provider.phone,
             'passwordHash': provider.passwordHash,
             'passwordSalt': provider.passwordSalt,
+            'email': provider.email,
             'status': provider.subscriptionStatus,
             'expiry': provider.subscriptionExpiry?.toUtc().toIso8601String(),
           },
@@ -331,6 +342,11 @@ class SharedSnapshot {
       'deletionSequence': deletionSequence,
       'requestSequence': requestSequence,
       'clientOrderSequence': clientOrderSequence,
+      'owner': {
+        'email': ownerEmail,
+        'passwordHash': ownerPasswordHash,
+        'passwordSalt': ownerPasswordSalt,
+      },
     };
   }
 
@@ -393,6 +409,8 @@ SharedSnapshot mergeSnapshots({
         'name': item.name,
         'phone': item.phone,
         'city': item.city,
+        'email': item.email,
+        'passwordHash': item.passwordHash,
       },
     ),
     providers: _mergeById(
@@ -403,6 +421,8 @@ SharedSnapshot mergeSnapshots({
       toJson: (item) => {
         'status': item.subscriptionStatus,
         'expiry': item.subscriptionExpiry?.toUtc().toIso8601String(),
+        'email': item.email,
+        'passwordHash': item.passwordHash,
       },
     ),
     technicians: _mergeById(
@@ -484,6 +504,26 @@ SharedSnapshot mergeSnapshots({
       local.clientOrderSequence,
       remote.clientOrderSequence,
     ),
+    ownerEmail: _ownerPick(base, local, remote).email,
+    ownerPasswordHash: _ownerPick(base, local, remote).hash,
+    ownerPasswordSalt: _ownerPick(base, local, remote).salt,
+  );
+}
+
+({String email, String hash, String salt}) _ownerPick(
+  SharedSnapshot base,
+  SharedSnapshot local,
+  SharedSnapshot remote,
+) {
+  final changed =
+      base.ownerEmail != local.ownerEmail ||
+      base.ownerPasswordHash != local.ownerPasswordHash ||
+      base.ownerPasswordSalt != local.ownerPasswordSalt;
+  final source = changed ? local : remote;
+  return (
+    email: source.ownerEmail,
+    hash: source.ownerPasswordHash,
+    salt: source.ownerPasswordSalt,
   );
 }
 
@@ -513,6 +553,9 @@ SharedSnapshot _copy(SharedSnapshot snapshot, {required int revision}) {
     deletionSequence: snapshot.deletionSequence,
     requestSequence: snapshot.requestSequence,
     clientOrderSequence: snapshot.clientOrderSequence,
+    ownerEmail: snapshot.ownerEmail,
+    ownerPasswordHash: snapshot.ownerPasswordHash,
+    ownerPasswordSalt: snapshot.ownerPasswordSalt,
   );
 }
 
@@ -750,6 +793,7 @@ ClientAccount _client(Map<String, dynamic> json) {
     passwordHash: json['passwordHash'] as String,
     passwordSalt: json['passwordSalt'] as String,
     createdAt: _date(json['at'])!,
+    email: json['email'] as String? ?? '',
   );
 }
 
@@ -762,6 +806,17 @@ ProviderAccount _provider(Map<String, dynamic> json) {
     passwordSalt: json['passwordSalt'] as String,
     subscriptionStatus: json['status'] as String,
     subscriptionExpiry: _date(json['expiry']),
+    email: json['email'] as String? ?? '',
+  );
+}
+
+({String email, String hash, String salt}) _owner(Object? value) {
+  if (value is! Map) return (email: '', hash: '', salt: '');
+  final json = _map(value);
+  return (
+    email: json['email'] as String? ?? '',
+    hash: json['passwordHash'] as String? ?? '',
+    salt: json['passwordSalt'] as String? ?? '',
   );
 }
 

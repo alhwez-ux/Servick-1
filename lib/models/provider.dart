@@ -9,6 +9,7 @@ class ProviderAccount {
     required this.passwordSalt,
     required this.subscriptionStatus,
     required this.subscriptionExpiry,
+    this.email = '',
   });
 
   final String id;
@@ -18,6 +19,7 @@ class ProviderAccount {
   final String passwordSalt;
   final String subscriptionStatus;
   final DateTime? subscriptionExpiry;
+  final String email;
 
   bool matchesPassword(String raw) {
     return hashPassword(raw, passwordSalt) == passwordHash;
@@ -33,15 +35,19 @@ class ProviderAccount {
   ProviderAccount copyWith({
     String? subscriptionStatus,
     DateTime? subscriptionExpiry,
+    String? passwordHash,
+    String? passwordSalt,
+    String? email,
   }) {
     return ProviderAccount(
       id: id,
       technicianId: technicianId,
       phone: phone,
-      passwordHash: passwordHash,
-      passwordSalt: passwordSalt,
+      passwordHash: passwordHash ?? this.passwordHash,
+      passwordSalt: passwordSalt ?? this.passwordSalt,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       subscriptionExpiry: subscriptionExpiry ?? this.subscriptionExpiry,
+      email: email ?? this.email,
     );
   }
 }

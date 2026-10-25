@@ -185,7 +185,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.text('الرجاء إدخال رقم الجوال وكلمة المرور'), findsOneWidget);
-    expect(find.text('بوابة الحرفيين والورش'), findsOneWidget);
+    expect(find.text('بوابة مقدمي الخدمات'), findsOneWidget);
+    expect(find.text('تسجيل مقدم خدمة'), findsOneWidget);
   });
 
   testWidgets('active craftsman reaches the job board', (tester) async {

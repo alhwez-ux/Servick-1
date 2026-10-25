@@ -19,6 +19,7 @@ void main() {
         phone: '0551112233',
         city: 'أبها',
         password: fixturePassword,
+        email: 'noura@example.com',
       ),
       isNull,
     );
@@ -41,19 +42,36 @@ void main() {
       ),
       isNull,
     );
+    expect(
+      first.changeOwnerPassword(
+        current: '7711',
+        next: 'secret1',
+        email: 'owner@example.com',
+      ),
+      isNull,
+    );
     await first.flush();
 
     final encoded = store.value!.encode();
     expect(encoded.contains(fixturePassword), isFalse);
+    expect(encoded.contains('secret1'), isFalse);
     expect(encoded.contains(client.passwordHash), isTrue);
+    expect(encoded.contains('noura@example.com'), isTrue);
 
     final second = AppModel(now: () => clock, store: store);
     await second.hydrate();
     expect(second.clientAccounts.single.name, 'نورة الشهري');
+    expect(second.clientAccounts.single.email, 'noura@example.com');
+    expect(second.ownerEmail, 'owner@example.com');
+    expect(second.ownerPasswordMatches('7711'), isFalse);
+    expect(second.ownerPasswordMatches('secret1'), isTrue);
     expect(second.addedServices.single.title, 'صيانة مكيفات');
     expect(second.ownerSuggestions.single.text, 'أضف سطحة');
     expect(second.orders.single.clientName, 'نورة الشهري');
-    expect(second.loginClient(phone: '0551112233', password: fixturePassword), isNull);
+    expect(
+      second.loginClient(phone: '0551112233', password: fixturePassword),
+      isNull,
+    );
 
     expect(second.removeService('petrol'), 'لا يمكن حذف الخدمات الأساسية');
     expect(second.removeService(second.addedServices.single.id), isNull);
@@ -68,7 +86,10 @@ void main() {
     await third.hydrate();
     expect(third.addedServices, isEmpty);
     expect(third.pendingDeletions.single.accountName, 'نورة الشهري');
-    expect(third.approveAccountDeletion(third.pendingDeletions.single.id), isNull);
+    expect(
+      third.approveAccountDeletion(third.pendingDeletions.single.id),
+      isNull,
+    );
     await third.flush();
 
     final fourth = AppModel(now: () => clock, store: store);

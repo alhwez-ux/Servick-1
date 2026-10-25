@@ -5,6 +5,8 @@ import '../app_scope.dart';
 import '../data/catalog.dart';
 import '../data/client_plans.dart';
 import '../data/format.dart';
+import '../data/phone.dart';
+import '../data/whatsapp.dart';
 import '../models/desk.dart';
 import '../models/models.dart';
 import '../theme/servick_theme.dart';
@@ -26,9 +28,12 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
   final _nextNumber = TextEditingController();
   final _note = TextEditingController();
   final _messageBody = TextEditingController();
+  final _whatsAppBody = TextEditingController();
+  final _whatsAppIds = <String>{};
   var _ready = false;
   var _invoicesEnabled = true;
   var _audience = 'provider';
+  var _whatsAppAudience = 'provider';
   String? _recipientId;
 
   @override
@@ -69,6 +74,7 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
     _nextNumber.dispose();
     _note.dispose();
     _messageBody.dispose();
+    _whatsAppBody.dispose();
     super.dispose();
   }
 
@@ -182,6 +188,56 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
                   _MessageCard(message: message),
                   const SizedBox(height: 8),
                 ],
+              const SizedBox(height: 20),
+              const SectionTitle('واتساب الأعمال'),
+              const SizedBox(height: 6),
+              Text(
+                'تُفتح المحادثة من واتساب الأعمال ${isolateLtr(whatsAppBusinessDisplay)} مع كل مقدم خدمة أو عميل تحدده.',
+                style: const TextStyle(color: ServickColors.muted, height: 1.5),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ChoiceChip(
+                    key: const Key('whatsapp-audience-provider'),
+                    label: const Text('مقدمو الخدمات'),
+                    selected: _whatsAppAudience == 'provider',
+                    onSelected: (_) => _selectWhatsAppAudience('provider'),
+                  ),
+                  ChoiceChip(
+                    key: const Key('whatsapp-audience-client'),
+                    label: const Text('العملاء'),
+                    selected: _whatsAppAudience == 'client',
+                    onSelected: (_) => _selectWhatsAppAudience('client'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _WhatsAppList(
+                recipients: _whatsAppTargets(model),
+                selected: _whatsAppIds,
+                onToggleAll: _toggleWhatsAppAll,
+                onToggle: _toggleWhatsApp,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('whatsapp-body'),
+                controller: _whatsAppBody,
+                minLines: 2,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  hintText: 'نص رسالة واتساب الأعمال',
+                ),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                key: const Key('send-whatsapp'),
+                onPressed: _sendWhatsApp,
+                icon: const Icon(Icons.chat),
+                label: const Text('مراسلة عبر واتساب'),
+              ),
               const SizedBox(height: 20),
               const SectionTitle('نظام الفوترة'),
               const SizedBox(height: 6),
@@ -314,6 +370,60 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
     _snack(error ?? 'تم إرسال الرسالة');
   }
 
+  List<DeskRecipient> _whatsAppTargets(AppModel model) {
+    return [
+      for (final recipient in model.deskRecipients(_whatsAppAudience))
+        if (validateSaudiMobile(recipient.detail) == null) recipient,
+    ];
+  }
+
+  void _selectWhatsAppAudience(String audience) {
+    setState(() {
+      _whatsAppAudience = audience;
+      _whatsAppIds.clear();
+    });
+  }
+
+  void _toggleWhatsAppAll(List<DeskRecipient> recipients, bool? value) {
+    setState(() {
+      _whatsAppIds.clear();
+      if (value ?? false) {
+        _whatsAppIds.addAll(recipients.map((recipient) => recipient.id));
+      }
+    });
+  }
+
+  void _toggleWhatsApp(String id, bool? value) {
+    setState(() {
+      if (value ?? false) {
+        _whatsAppIds.add(id);
+      } else {
+        _whatsAppIds.remove(id);
+      }
+    });
+  }
+
+  void _sendWhatsApp() {
+    final text = _whatsAppBody.text.trim();
+    if (text.isEmpty) {
+      _snack('اكتب نص الرسالة');
+      return;
+    }
+    final chosen = _whatsAppTargets(AppScope.of(context))
+        .where((recipient) => _whatsAppIds.contains(recipient.id));
+    var opened = 0;
+    for (final recipient in chosen) {
+      if (whatsAppChatUrl(recipient.detail, text) == null) continue;
+      openWhatsAppChat(recipient.detail, text);
+      opened += 1;
+    }
+    if (opened == 0) {
+      _snack('اختر مستلماً واحداً على الأقل');
+      return;
+    }
+    _snack('فُتحت $opened محادثة على واتساب الأعمال $whatsAppBusinessDisplay');
+  }
+
   void _saveBilling() {
     final error = AppScope.of(context).updateBilling(
       providerFeeRaw: _providerFee.text,
@@ -326,6 +436,56 @@ class _AdminDeskScreenState extends State<AdminDeskScreen> {
       invoicesEnabled: _invoicesEnabled,
     );
     _snack(error ?? 'تم حفظ إعدادات الفوترة');
+  }
+}
+
+class _WhatsAppList extends StatelessWidget {
+  const _WhatsAppList({
+    required this.recipients,
+    required this.selected,
+    required this.onToggleAll,
+    required this.onToggle,
+  });
+
+  final List<DeskRecipient> recipients;
+  final Set<String> selected;
+  final void Function(List<DeskRecipient> recipients, bool? value) onToggleAll;
+  final void Function(String id, bool? value) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    if (recipients.isEmpty) {
+      return const Text(
+        'لا يوجد رقم جوال سعودي في هذه القائمة.',
+        key: Key('whatsapp-empty'),
+        style: TextStyle(color: ServickColors.muted, height: 1.5),
+      );
+    }
+    final allSelected = recipients.every(
+      (recipient) => selected.contains(recipient.id),
+    );
+    return Column(
+      children: [
+        CheckboxListTile(
+          key: const Key('whatsapp-all'),
+          contentPadding: EdgeInsets.zero,
+          value: allSelected,
+          title: const Text('تحديد الكل'),
+          controlAffinity: ListTileControlAffinity.leading,
+          onChanged: (value) => onToggleAll(recipients, value),
+        ),
+        for (final recipient in recipients)
+          CheckboxListTile(
+            key: Key('whatsapp-target-${recipient.id}'),
+            contentPadding: EdgeInsets.zero,
+            value: selected.contains(recipient.id),
+            title: Text(recipient.name),
+            subtitle: Text(isolateLtr(recipient.detail)),
+            controlAffinity: ListTileControlAffinity.leading,
+            onChanged: (value) => onToggle(recipient.id, value),
+          ),
+      ],
+    );
   }
 }
 

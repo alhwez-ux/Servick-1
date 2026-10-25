@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'data/admin.dart';
+import 'data/mail.dart';
 import 'data/catalog.dart';
 import 'data/matching.dart' as matching;
 import 'data/order_categories.dart';
@@ -26,7 +29,11 @@ class AppModel extends ChangeNotifier {
     List<Technician>? technicians,
     List<ServiceOrder>? orders,
     SharedStore? store,
+    Future<bool> Function(PasswordMail mail)? mailer,
+    String Function()? temporaryPassword,
   }) : _now = now ?? DateTime.now,
+       _mailer = mailer ?? postPasswordMail,
+       _temporaryPassword = temporaryPassword ?? _randomPassword,
        _city = city ?? cities.first,
        _providers = List<ProviderAccount>.from(providers ?? const []),
        _technicians = List<Technician>.from(technicians ?? const []),
@@ -35,6 +42,8 @@ class AppModel extends ChangeNotifier {
 
   final DateTime Function() _now;
   final SharedStore _store;
+  final Future<bool> Function(PasswordMail mail) _mailer;
+  final String Function() _temporaryPassword;
   SharedSnapshot _base = SharedSnapshot.empty();
   Future<void>? _saveChain;
   String? syncError;
@@ -74,6 +83,14 @@ class AppModel extends ChangeNotifier {
   bool _clientPrivacyAccepted = false;
   bool _providerPrivacyAccepted = false;
   final List<ServiceCategory> _extraCategories = [];
+  String _ownerEmail = '';
+  String _ownerPasswordHash = '';
+  String _ownerPasswordSalt = '';
+
+  String get ownerEmail => _ownerEmail;
+
+  bool get ownerUsesDemoPasscode =>
+      _ownerPasswordHash.isEmpty || _ownerPasswordSalt.isEmpty;
 
   String get city => _city;
 
@@ -677,6 +694,202 @@ class AppModel extends ChangeNotifier {
     return null;
   }
 
+  bool ownerPasswordMatches(String raw) {
+    final password = raw.trim();
+    if (_ownerPasswordHash.isEmpty || _ownerPasswordSalt.isEmpty) {
+      return password == demoAdminPasscode;
+    }
+    return hashPassword(password, _ownerPasswordSalt) == _ownerPasswordHash;
+  }
+
+  String? changeClientPassword({
+    required String clientId,
+    required String current,
+    required String next,
+    String? email,
+  }) {
+    final index = _clientAccounts.indexWhere(
+      (account) => account.id == clientId,
+    );
+    if (index < 0) return 'الحساب غير موجود';
+    return _replaceClient(
+      index,
+      _nextCredentials(
+        account: _clientAccounts[index],
+        current: current,
+        next: next,
+        email: email,
+      ),
+    );
+  }
+
+  String? changeProviderPassword({
+    required String providerId,
+    required String current,
+    required String next,
+    String? email,
+  }) {
+    final index = _providers.indexWhere((account) => account.id == providerId);
+    if (index < 0) return 'الحساب غير موجود';
+    final account = _providers[index];
+    if (!account.matchesPassword(current)) {
+      return 'كلمة المرور الحالية غير صحيحة';
+    }
+    if (next.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final emailError = _emailUpdate(account.email, email);
+    if (emailError != null) return emailError;
+    final salt = newSalt();
+    final updated = account.copyWith(
+      passwordHash: hashPassword(next.trim(), salt),
+      passwordSalt: salt,
+      email: email == null ? account.email : foldEmail(email),
+    );
+    _providers[index] = updated;
+    if (_session?.id == updated.id) _session = updated;
+    _touch();
+    return null;
+  }
+
+  String? changeOwnerPassword({
+    required String current,
+    required String next,
+    String? email,
+  }) {
+    if (!ownerPasswordMatches(current)) return 'كلمة المرور الحالية غير صحيحة';
+    if (next.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final emailError = _emailUpdate(_ownerEmail, email);
+    if (emailError != null) return emailError;
+    final salt = newSalt();
+    _ownerPasswordSalt = salt;
+    _ownerPasswordHash = hashPassword(next.trim(), salt);
+    if (email != null) _ownerEmail = foldEmail(email);
+    _touch();
+    return null;
+  }
+
+  Future<PasswordResetResult> resetPasswordByEmail({
+    required String audience,
+    required String email,
+  }) async {
+    final clean = foldEmail(email);
+    final emailError = validateAccountEmail(clean);
+    if (emailError != null) {
+      return PasswordResetResult(error: emailError);
+    }
+    final temporary = _temporaryPassword();
+    final salt = newSalt();
+    final hash = hashPassword(temporary, salt);
+    if (audience == 'owner') {
+      if (_ownerEmail.isEmpty) {
+        return const PasswordResetResult(
+          error: 'لا يوجد بريد مسجّل للمالك. أضفه من لوحة التحكم بعد الدخول.',
+        );
+      }
+      if (foldEmail(_ownerEmail) != clean) {
+        return const PasswordResetResult(error: 'لا يوجد حساب بهذا البريد');
+      }
+      _ownerPasswordSalt = salt;
+      _ownerPasswordHash = hash;
+    } else if (audience == 'provider') {
+      final index = _providers.indexWhere(
+        (account) => foldEmail(account.email) == clean,
+      );
+      if (index < 0) {
+        return const PasswordResetResult(error: 'لا يوجد حساب بهذا البريد');
+      }
+      final updated = _providers[index].copyWith(
+        passwordHash: hash,
+        passwordSalt: salt,
+      );
+      _providers[index] = updated;
+      if (_session?.id == updated.id) _session = updated;
+    } else {
+      final index = _clientAccounts.indexWhere(
+        (account) => foldEmail(account.email) == clean,
+      );
+      if (index < 0) {
+        return const PasswordResetResult(error: 'لا يوجد حساب بهذا البريد');
+      }
+      final updated = _clientAccounts[index].copyWith(
+        passwordHash: hash,
+        passwordSalt: salt,
+      );
+      _clientAccounts[index] = updated;
+      if (_clientSession?.id == updated.id) _clientSession = updated;
+    }
+    _touch();
+    var mailed = false;
+    try {
+      mailed = await _mailer(
+        PasswordMail(
+          to: clean,
+          subject: 'كلمة المرور المؤقتة | رابط',
+          text:
+              'كلمة المرور المؤقتة لحسابك في رابط: $temporary\nغيّرها بعد الدخول.',
+        ),
+      );
+    } catch (_) {
+      mailed = false;
+    }
+    return PasswordResetResult(
+      mailed: mailed,
+      temporary: mailed ? null : temporary,
+    );
+  }
+
+  String? _replaceClient(int index, Object result) {
+    if (result is String) return result;
+    final updated = result as ClientAccount;
+    _clientAccounts[index] = updated;
+    if (_clientSession?.id == updated.id) _clientSession = updated;
+    _touch();
+    return null;
+  }
+
+  Object _nextCredentials({
+    required ClientAccount account,
+    required String current,
+    required String next,
+    String? email,
+  }) {
+    if (!account.matchesPassword(current)) {
+      return 'كلمة المرور الحالية غير صحيحة';
+    }
+    if (next.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final emailError = _emailUpdate(account.email, email);
+    if (emailError != null) return emailError;
+    final salt = newSalt();
+    return account.copyWith(
+      passwordHash: hashPassword(next.trim(), salt),
+      passwordSalt: salt,
+      email: email == null ? account.email : foldEmail(email),
+    );
+  }
+
+  String? _emailUpdate(String current, String? email) {
+    if (email == null) return null;
+    final clean = foldEmail(email);
+    if (clean.isEmpty) return 'اكتب البريد الإلكتروني';
+    final error = validateAccountEmail(clean);
+    if (error != null) return error;
+    if (foldEmail(current) == clean) return null;
+    if (_emailTaken(clean)) return 'هذا البريد مسجّل من قبل';
+    return null;
+  }
+
+  bool _emailTaken(String email) {
+    final clean = foldEmail(email);
+    if (clean.isEmpty) return false;
+    if (foldEmail(_ownerEmail) == clean) return true;
+    for (final account in _clientAccounts) {
+      if (foldEmail(account.email) == clean) return true;
+    }
+    for (final account in _providers) {
+      if (foldEmail(account.email) == clean) return true;
+    }
+    return false;
+  }
+
   String? removeDeskMessage(String id) {
     final removed = _messages.length;
     _messages.removeWhere((message) => message.id == id);
@@ -1060,6 +1273,7 @@ class AppModel extends ChangeNotifier {
     required String phone,
     required String city,
     required String password,
+    String email = '',
   }) {
     final cleanName = name.trim();
     if (cleanName.isEmpty) return 'اكتب الاسم';
@@ -1068,6 +1282,12 @@ class AppModel extends ChangeNotifier {
     if (phoneError != null) return phoneError;
     if (!cities.contains(city)) return 'المدينة غير معروفة';
     if (password.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final cleanEmail = foldEmail(email);
+    if (cleanEmail.isNotEmpty) {
+      final emailError = validateAccountEmail(cleanEmail);
+      if (emailError != null) return emailError;
+      if (_emailTaken(cleanEmail)) return 'هذا البريد مسجّل من قبل';
+    }
     final normalized = normalizeSaudiMobile(phone);
     if (_phoneTaken(normalized)) return 'هذا الجوال مسجّل من قبل';
     _clientSequence += 1;
@@ -1081,6 +1301,7 @@ class AppModel extends ChangeNotifier {
         passwordHash: hashPassword(password.trim(), salt),
         passwordSalt: salt,
         createdAt: _now(),
+        email: cleanEmail,
       ),
     );
     _touch();
@@ -1110,6 +1331,7 @@ class AppModel extends ChangeNotifier {
     required String categoryId,
     required String password,
     String about = '',
+    String email = '',
   }) {
     final cleanName = name.trim();
     if (cleanName.isEmpty) return 'اكتب الاسم';
@@ -1119,6 +1341,12 @@ class AppModel extends ChangeNotifier {
     if (!cities.contains(city)) return 'المدينة غير معروفة';
     if (categoryOf(categoryId) == null) return 'نوع الخدمة غير معروف';
     if (password.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final cleanEmail = foldEmail(email);
+    if (cleanEmail.isNotEmpty) {
+      final emailError = validateAccountEmail(cleanEmail);
+      if (emailError != null) return emailError;
+      if (_emailTaken(cleanEmail)) return 'هذا البريد مسجّل من قبل';
+    }
     final normalized = normalizeSaudiMobile(phone);
     if (_phoneTaken(normalized)) return 'هذا الجوال مسجّل من قبل';
     _providerSequence += 1;
@@ -1155,6 +1383,7 @@ class AppModel extends ChangeNotifier {
         passwordSalt: salt,
         subscriptionStatus: 'expired',
         subscriptionExpiry: _now().subtract(const Duration(days: 1)),
+        email: cleanEmail,
       ),
     );
     _touch();
@@ -1402,10 +1631,16 @@ class AppModel extends ChangeNotifier {
       deletionSequence: _deletionSequence,
       requestSequence: _sequence,
       clientOrderSequence: _clientOrderSequence,
+      ownerEmail: _ownerEmail,
+      ownerPasswordHash: _ownerPasswordHash,
+      ownerPasswordSalt: _ownerPasswordSalt,
     );
   }
 
   void _apply(SharedSnapshot snapshot) {
+    _ownerEmail = snapshot.ownerEmail;
+    _ownerPasswordHash = snapshot.ownerPasswordHash;
+    _ownerPasswordSalt = snapshot.ownerPasswordSalt;
     _extraCategories
       ..clear()
       ..addAll(snapshot.services);
@@ -1508,6 +1743,35 @@ class AppModel extends ChangeNotifier {
     }
     return max;
   }
+}
+
+class PasswordResetResult {
+  const PasswordResetResult({this.error, this.mailed = false, this.temporary});
+
+  final String? error;
+  final bool mailed;
+  final String? temporary;
+}
+
+String foldEmail(String value) => value.trim().toLowerCase();
+
+String? validateAccountEmail(String value) {
+  final email = foldEmail(value);
+  if (email.isEmpty) return 'اكتب البريد الإلكتروني';
+  if (email.length > 80 ||
+      !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+    return 'البريد الإلكتروني غير صحيح';
+  }
+  return null;
+}
+
+String _randomPassword() {
+  const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  final random = Random.secure();
+  return List.generate(
+    8,
+    (_) => alphabet[random.nextInt(alphabet.length)],
+  ).join();
 }
 
 class AppScope extends InheritedNotifier<AppModel> {

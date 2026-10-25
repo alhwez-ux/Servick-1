@@ -5,6 +5,7 @@ import '../data/admin.dart';
 import '../data/format.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/account_security.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -42,7 +43,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     Future<void>.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      if (enteredPasscode == demoAdminPasscode) {
+      if (AppScope.of(context).ownerPasswordMatches(enteredPasscode)) {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         AppScope.of(context).unlockAdmin();
         if (!context.mounted) return;
@@ -104,23 +105,25 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'الرقم التجريبي: ${isolateLtr(demoAdminPasscode)}. التحقق داخل الجلسة وليس حماية حقيقية.',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: ServickColors.muted,
-                    height: 1.5,
+                if (AppScope.of(context).ownerUsesDemoPasscode) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'الرقم التجريبي: ${isolateLtr(demoAdminPasscode)}. التحقق داخل الجلسة وليس حماية حقيقية.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: ServickColors.muted,
+                      height: 1.5,
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 32),
                 TextField(
                   key: const Key('admin-passcode'),
                   controller: _passcodeController,
                   obscureText: true,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
+                  keyboardType: TextInputType.text,
+                  maxLength: 32,
                   textAlign: TextAlign.center,
                   textDirection: TextDirection.ltr,
                   enabled: !_isLoading,
@@ -175,6 +178,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             ),
                           ),
                   ),
+                ),
+                TextButton(
+                  key: const Key('forgot-password-owner'),
+                  onPressed: _isLoading
+                      ? null
+                      : () => showPasswordRecovery(context, audience: 'owner'),
+                  child: const Text('نسيت كلمة المرور؟'),
                 ),
               ],
             ),

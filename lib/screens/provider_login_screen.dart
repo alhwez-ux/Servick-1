@@ -4,6 +4,7 @@ import '../app_scope.dart';
 import '../models/provider.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/account_security.dart';
 import '../widgets/servick_scaffold.dart';
 
 class ProviderLoginScreen extends StatefulWidget {
@@ -173,7 +174,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'بوابة الحرفيين والورش',
+                    'بوابة مقدمي الخدمات',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                   ),
@@ -293,7 +294,17 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                       Navigator.of(context)
                           .pushNamed(ServickRoutes.providerRegister);
                     },
-                    child: const Text('إنشاء حساب حرفي'),
+                    child: const Text('تسجيل مقدم خدمة'),
+                  ),
+                  TextButton(
+                    key: const Key('forgot-password-provider'),
+                    onPressed: _isLoading
+                        ? null
+                        : () => showPasswordRecovery(
+                            context,
+                            audience: 'provider',
+                          ),
+                    child: const Text('نسيت كلمة المرور؟'),
                   ),
                   const SizedBox(height: 8),
                   const Text(

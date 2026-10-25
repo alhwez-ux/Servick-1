@@ -138,7 +138,7 @@ void main() {
       find.text('يجب الموافقة على سياسة الخصوصية قبل تسجيل الدخول'),
       findsOneWidget,
     );
-    expect(find.text('بوابة الحرفيين والورش'), findsOneWidget);
+    expect(find.text('بوابة مقدمي الخدمات'), findsOneWidget);
   });
 
   testWidgets('the privacy page shows the October 2026 terms', (tester) async {

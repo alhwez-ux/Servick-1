@@ -185,6 +185,7 @@ class ClientAccount {
     required this.passwordHash,
     required this.passwordSalt,
     required this.createdAt,
+    this.email = '',
   });
 
   final String id;
@@ -194,9 +195,27 @@ class ClientAccount {
   final String passwordHash;
   final String passwordSalt;
   final DateTime createdAt;
+  final String email;
 
   bool matchesPassword(String raw) {
     return hashPassword(raw, passwordSalt) == passwordHash;
+  }
+
+  ClientAccount copyWith({
+    String? passwordHash,
+    String? passwordSalt,
+    String? email,
+  }) {
+    return ClientAccount(
+      id: id,
+      name: name,
+      phone: phone,
+      city: city,
+      passwordHash: passwordHash ?? this.passwordHash,
+      passwordSalt: passwordSalt ?? this.passwordSalt,
+      createdAt: createdAt,
+      email: email ?? this.email,
+    );
   }
 }
 

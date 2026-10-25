@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_scope.dart';
 import '../models/models.dart';
 import '../theme/servick_theme.dart';
+import '../widgets/account_security.dart';
 import '../widgets/servick_scaffold.dart';
 
 class ClientAuthArgs {
@@ -25,6 +26,7 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _password = TextEditingController();
+  final _email = TextEditingController();
   var _city = cities.first;
   var _accepted = false;
 
@@ -33,6 +35,7 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
     _name.dispose();
     _phone.dispose();
     _password.dispose();
+    _email.dispose();
     super.dispose();
   }
 
@@ -55,6 +58,7 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
         phone: _phone.text,
         city: _city,
         password: _password.text,
+        email: _email.text,
       );
       if (error != null) {
         _snack(error);
@@ -114,6 +118,17 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
             ),
             if (_register) ...[
               const SizedBox(height: 12),
+              TextField(
+                key: const Key('client-email'),
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                textDirection: TextDirection.ltr,
+                decoration: const InputDecoration(
+                  labelText: 'البريد الإلكتروني',
+                  helperText: 'يُستخدم لاسترجاع كلمة المرور',
+                ),
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 key: const Key('client-city'),
                 initialValue: _city,
@@ -146,6 +161,13 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
               onPressed: _submit,
               child: Text(_register ? 'إنشاء الحساب' : 'دخول'),
             ),
+            if (!_register)
+              TextButton(
+                key: const Key('forgot-password-client'),
+                onPressed: () =>
+                    showPasswordRecovery(context, audience: 'client'),
+                child: const Text('نسيت كلمة المرور؟'),
+              ),
             TextButton(
               key: const Key('client-auth-mode'),
               onPressed: () => setState(() => _register = !_register),

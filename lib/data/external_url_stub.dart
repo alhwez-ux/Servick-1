@@ -1,0 +1,1 @@
+void openExternalUrlImpl(String url) {}
