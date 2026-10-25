@@ -31,41 +31,53 @@ class ServickFrame extends StatelessWidget {
   }
 }
 
+class _BrandPlate extends StatelessWidget {
+  const _BrandPlate({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F8FB),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Padding(padding: const EdgeInsets.all(4), child: child),
+    );
+  }
+}
+
 class ServickBrand extends StatelessWidget {
   const ServickBrand({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
+    return const FittedBox(
       fit: BoxFit.scaleDown,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF4F8FB),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Padding(
-          padding: EdgeInsets.fromLTRB(6, 4, 8, 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image(
-                image: AssetImage('assets/brand/rabitt_mark.png'),
-                height: 34,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.medium,
-                semanticLabel: 'شعار رابط',
-              ),
-              SizedBox(width: 6),
-              Image(
-                image: AssetImage('assets/brand/rabitt_wordmark.png'),
-                height: 18,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.medium,
-                excludeFromSemantics: true,
-              ),
-            ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _BrandPlate(
+            child: Image(
+              image: AssetImage('assets/brand/rabitt_mark.png'),
+              height: 36,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.medium,
+              semanticLabel: 'شعار رابط',
+            ),
           ),
-        ),
+          SizedBox(width: 12),
+          _BrandPlate(
+            child: Image(
+              image: AssetImage('assets/brand/rabitt_wordmark.png'),
+              height: 22,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.medium,
+              semanticLabel: 'رابط',
+            ),
+          ),
+        ],
       ),
     );
   }

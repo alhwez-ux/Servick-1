@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../models/models.dart';
 
+/// Decode only the pixels the circle needs (at most 256, matching the asset).
+int serviceImageCacheSize(BuildContext context, double logical) {
+  final pixels = (logical * MediaQuery.devicePixelRatioOf(context)).round();
+  if (pixels < 64) return 64;
+  if (pixels > 256) return 256;
+  return pixels;
+}
+
 class ServiceArtwork extends StatelessWidget {
   const ServiceArtwork({
     super.key,
@@ -28,6 +36,7 @@ class ServiceArtwork extends StatelessWidget {
     }
     final side = width != null && width!.isFinite ? width! : height;
     final radius = borderRadius <= 0 ? 0.0 : side / 2;
+    final cache = serviceImageCacheSize(context, side);
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Image.asset(
@@ -36,6 +45,9 @@ class ServiceArtwork extends StatelessWidget {
         width: side,
         height: height,
         fit: BoxFit.cover,
+        filterQuality: FilterQuality.medium,
+        cacheWidth: cache,
+        cacheHeight: cache,
         semanticLabel: category.title,
         errorBuilder: (context, error, stackTrace) {
           return ColoredBox(

@@ -131,6 +131,7 @@ class _AdminServiceScreenState extends State<AdminServiceScreen> {
                     itemBuilder: (context, index) {
                       final picture = servicePictures[index];
                       final chosen = picture.id == _pictureId;
+                      final thumb = serviceImageCacheSize(context, 76);
                       return InkWell(
                         key: Key('picture-${picture.id}'),
                         onTap: () {
@@ -158,6 +159,9 @@ class _AdminServiceScreenState extends State<AdminServiceScreen> {
                             child: Image.asset(
                               picture.asset,
                               fit: BoxFit.cover,
+                              filterQuality: FilterQuality.low,
+                              cacheWidth: thumb,
+                              cacheHeight: thumb,
                               semanticLabel: picture.label,
                             ),
                           ),
