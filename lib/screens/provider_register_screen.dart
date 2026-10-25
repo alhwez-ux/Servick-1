@@ -163,7 +163,7 @@ class _ProviderRegisterScreenState extends State<ProviderRegisterScreen> {
               value: _accepted,
               onChanged: (value) => setState(() => _accepted = value ?? false),
               title: const Text(
-                'أوافق على سياسة الخصوصية والشروط. المنصة وسيط، ورسوم الاشتراك غير مستردة.',
+                'أوافق على سياسة الخصوصية والشروط.',
                 style: TextStyle(fontSize: 13, height: 1.4),
               ),
               controlAffinity: ListTileControlAffinity.leading,

@@ -180,7 +180,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'أدخل بياناتك لاستقبال طلبات الصيانة في خميس مشيط، أبها، وأحد رفيدة',
+                    'أدخل بياناتك لاستقبال الطلبات في خميس مشيط، أبها، وأحد رفيدة',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
@@ -251,7 +251,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                           child: Padding(
                             padding: EdgeInsets.only(top: 12),
                             child: Text(
-                              'أوافق على سياسة الخصوصية والشروط. المنصة وسيط، ورسوم الاشتراك غير مستردة.',
+                              'أوافق على سياسة الخصوصية والشروط.',
                               style: TextStyle(fontSize: 13, height: 1.4),
                             ),
                           ),
@@ -305,15 +305,6 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                             audience: 'provider',
                           ),
                     child: const Text('نسيت كلمة المرور؟'),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'لا توجد حسابات تجريبية. الحساب الجديد يُحفظ على الويب، ويظهر للمالك لتفعيله. السداد هنا لا يخصم مبلغاً.',
-                    style: TextStyle(
-                      color: ServickColors.muted,
-                      fontSize: 12,
-                      height: 1.5,
-                    ),
                   ),
                 ],
               ),
