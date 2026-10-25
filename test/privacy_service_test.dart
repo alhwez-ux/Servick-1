@@ -6,6 +6,8 @@ import 'package:servick/data/providers.dart';
 import 'package:servick/data/service_pictures.dart';
 import 'package:servick/main.dart';
 
+import 'support/accounts.dart';
+
 void main() {
   test('craftsman fee and new service stay inside the session', () {
     final model = AppModel(now: () => DateTime.utc(2026, 10, 23, 12));
@@ -56,9 +58,7 @@ void main() {
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.byKey(const Key('open-admin-login')));
-    await tester.tap(find.byKey(const Key('open-admin-login')));
-    await tester.pumpAndSettle();
+    await openOwnerLogin(tester);
     await tester.enterText(
       find.byKey(const Key('admin-passcode')),
       demoAdminPasscode,

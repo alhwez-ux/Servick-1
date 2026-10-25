@@ -88,13 +88,13 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
           children: [
-            Text(
-              _register
-                  ? 'الحساب يُحفظ على الويب ويظهر من أي جهاز تدخل منه. كلمة المرور لا تُعرض كنص في السجل.'
-                  : 'ادخل برقم الجوال وكلمة المرور التي سجّلت بها.',
-              style: const TextStyle(color: ServickColors.muted, height: 1.6),
-            ),
-            const SizedBox(height: 16),
+            if (!_register) ...[
+              const Text(
+                'ادخل برقم الجوال وكلمة المرور التي سجّلت بها.',
+                style: TextStyle(color: ServickColors.muted, height: 1.6),
+              ),
+              const SizedBox(height: 16),
+            ],
             if (_register) ...[
               TextField(
                 key: const Key('client-name'),

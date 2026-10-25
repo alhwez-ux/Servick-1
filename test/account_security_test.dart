@@ -193,9 +193,7 @@ void main() {
     final model = AppModel(now: () => DateTime.utc(2026, 10, 25, 8));
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('open-admin-login')));
-    await tester.tap(find.byKey(const Key('open-admin-login')));
-    await tester.pumpAndSettle();
+    await openOwnerLogin(tester);
     await tester.enterText(
       find.byKey(const Key('admin-passcode')),
       demoAdminPasscode,
@@ -229,9 +227,7 @@ void main() {
 
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('open-admin-login')));
-    await tester.tap(find.byKey(const Key('open-admin-login')));
-    await tester.pumpAndSettle();
+    await openOwnerLogin(tester);
     expect(find.textContaining(demoAdminPasscode), findsNothing);
     await tester.enterText(find.byKey(const Key('admin-passcode')), 'owner11');
     await tester.tap(find.byKey(const Key('admin-login')));
@@ -325,9 +321,7 @@ void main() {
 
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(const Key('open-admin-login')));
-    await tester.tap(find.byKey(const Key('open-admin-login')));
-    await tester.pumpAndSettle();
+    await openOwnerLogin(tester);
     await tester.enterText(
       find.byKey(const Key('admin-passcode')),
       demoAdminPasscode,

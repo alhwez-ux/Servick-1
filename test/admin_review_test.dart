@@ -72,9 +72,7 @@ void main() {
     await tester.pumpWidget(ServickApp(model: model));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.byKey(const Key('open-admin-login')));
-    await tester.tap(find.byKey(const Key('open-admin-login')));
-    await tester.pumpAndSettle();
+    await openOwnerLogin(tester);
     await tester.enterText(
       find.byKey(const Key('admin-passcode')),
       demoAdminPasscode,

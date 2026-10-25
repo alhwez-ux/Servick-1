@@ -155,6 +155,7 @@ Widget _clientPlans(ClientSubscriptionArgs args) {
   return ClientSubscriptionScreen(
     clientId: args.clientId,
     isAdmin: args.isAdmin,
+    catalog: args.catalog,
   );
 }
 

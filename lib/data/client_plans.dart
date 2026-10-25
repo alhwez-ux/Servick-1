@@ -71,6 +71,15 @@ const clientPlans = <ClientPlan>[
     adminOnly: false,
     color: Color(0xFFFF8F00),
   ),
+  ClientPlan(
+    id: 'provider_annual',
+    title: 'باقة مزودي الخدمة',
+    duration: 'عام كامل',
+    priceAmount: 100,
+    months: 12,
+    adminOnly: false,
+    color: Color(0xFF1E3A8A),
+  ),
 ];
 
 ClientPlan? clientPlanById(String id) {

@@ -1,7 +1,16 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
 import 'package:servick/models/models.dart';
 import 'package:servick/models/provider.dart';
+import 'package:servick/routes.dart';
+
+Future<void> openOwnerLogin(WidgetTester tester) async {
+  tester
+      .state<NavigatorState>(find.byType(Navigator))
+      .pushNamed(ServickRoutes.adminLogin);
+  await tester.pumpAndSettle();
+}
 
 const fixturePassword = '123456';
 
@@ -43,10 +52,7 @@ ClientAccount seedClient(
   );
   expect(error, isNull, reason: error);
   if (signIn) {
-    expect(
-      model.loginClient(phone: phone, password: fixturePassword),
-      isNull,
-    );
+    expect(model.loginClient(phone: phone, password: fixturePassword), isNull);
   }
   return model.clientByPhone(phone)!;
 }

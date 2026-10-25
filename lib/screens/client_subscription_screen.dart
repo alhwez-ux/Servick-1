@@ -3,18 +3,22 @@ import 'package:flutter/material.dart';
 import '../app_scope.dart';
 import '../data/client_plans.dart';
 import '../data/format.dart';
+import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/privacy_gate.dart';
+import 'client_auth_screen.dart';
 
 class ClientSubscriptionScreen extends StatefulWidget {
   const ClientSubscriptionScreen({
     super.key,
     required this.clientId,
     this.isAdmin = false,
+    this.catalog = false,
   });
 
   final String clientId;
   final bool isAdmin;
+  final bool catalog;
 
   @override
   State<ClientSubscriptionScreen> createState() =>
@@ -23,15 +27,38 @@ class ClientSubscriptionScreen extends StatefulWidget {
 
 class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
   String? _selectedPlanId;
+  String? _assignClientId;
+
+  void _snack(String message) {
+    ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
 
   Future<void> _subscribeClient(ClientPlan plan) async {
+    final model = AppScope.of(context);
+    final owner = widget.isAdmin && model.adminUnlocked;
+    if (owner && plan.adminOnly && _assignClientId == null) {
+      _snack('اختر العميل الذي ستُخصص له الباقة');
+      return;
+    }
+    final sessionId = model.clientSession?.id ?? '';
+    final target = owner && _assignClientId != null
+        ? _assignClientId!
+        : (widget.clientId.isNotEmpty ? widget.clientId : sessionId);
+    if (target.isEmpty) {
+      _snack('أنشئ حساب عميل قبل تأكيد الاشتراك');
+      await Navigator.of(context).pushNamed(
+        ServickRoutes.clientAuth,
+        arguments: const ClientAuthArgs(register: true),
+      );
+      return;
+    }
     final allowed = await requireClientPrivacy(context);
     if (!allowed || !mounted) return;
-    final error = AppScope.of(context).subscribeClient(
-      clientId: widget.clientId,
-      planId: plan.id,
-      months: plan.months,
-    );
+    final error = AppScope.of(
+      context,
+    ).subscribeClient(clientId: target, planId: plan.id, months: plan.months);
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -43,8 +70,12 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
     }
     messenger.clearSnackBars();
     messenger.showSnackBar(
-      const SnackBar(
-        content: Text('تم تفعيل باقتك بنجاح في رابط! مرحباً بك.'),
+      SnackBar(
+        content: Text(
+          owner && _assignClientId != null
+              ? 'تم تخصيص الباقة للعميل.'
+              : 'تم تفعيل باقتك بنجاح في رابط! مرحباً بك.',
+        ),
       ),
     );
     navigator.pop();
@@ -52,13 +83,16 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final availablePlans = plansFor(isAdmin: widget.isAdmin);
+    final model = AppScope.of(context);
+    final owner = widget.isAdmin && model.adminUnlocked;
+    final availablePlans = plansFor(isAdmin: owner);
+    final clients = model.clientAccounts;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'باقات اشتراك العملاء | رابط',
-          style: TextStyle(fontFamily: 'Cairo', fontSize: 16),
+        title: Text(
+          widget.catalog ? 'باقات الاشتراك | رابط' : 'اشتراك العملاء | رابط',
+          style: const TextStyle(fontFamily: 'Cairo', fontSize: 16),
         ),
         backgroundColor: ServickColors.navy,
       ),
@@ -75,16 +109,40 @@ class _ClientSubscriptionScreenState extends State<ClientSubscriptionScreen> {
                 height: 1.5,
               ),
             ),
-            if (widget.isAdmin) ...[
+            if (owner) ...[
               const SizedBox(height: 8),
               const Text(
-                'معاينة المالك: الباقة الخاصة تجريبية ولا تفتح صلاحية حقيقية.',
+                'باقة المالك الخاصة تظهر لك وحدك. اختر العميل لتخصيصها له.',
                 style: TextStyle(
                   fontSize: 12,
                   color: ServickColors.muted,
                   height: 1.5,
                 ),
               ),
+              const SizedBox(height: 12),
+              if (clients.isEmpty)
+                const Text(
+                  'لا يوجد عملاء مسجلون بعد.',
+                  key: Key('owner-plan-clients-empty'),
+                  style: TextStyle(color: ServickColors.muted, height: 1.5),
+                )
+              else
+                DropdownButtonFormField<String>(
+                  key: const Key('owner-plan-client'),
+                  initialValue: _assignClientId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'تخصيص الباقة للعميل',
+                  ),
+                  items: [
+                    for (final client in clients)
+                      DropdownMenuItem(
+                        value: client.id,
+                        child: Text('${client.name} · ${client.city}'),
+                      ),
+                  ],
+                  onChanged: (value) => setState(() => _assignClientId = value),
+                ),
             ],
             const SizedBox(height: 16),
             Expanded(

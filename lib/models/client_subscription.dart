@@ -17,8 +17,13 @@ class ClientSubscription {
 }
 
 class ClientSubscriptionArgs {
-  const ClientSubscriptionArgs({required this.clientId, required this.isAdmin});
+  const ClientSubscriptionArgs({
+    required this.clientId,
+    required this.isAdmin,
+    this.catalog = false,
+  });
 
   final String clientId;
   final bool isAdmin;
+  final bool catalog;
 }

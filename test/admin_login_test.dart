@@ -13,8 +13,10 @@ Future<void> _openLogin(WidgetTester tester) async {
 
   await tester.pumpWidget(ServickApp(model: AppModel()));
   await tester.pumpAndSettle();
-  await tester.ensureVisible(find.byKey(const Key('open-admin-login')));
-  await tester.tap(find.byKey(const Key('open-admin-login')));
+  expect(find.text('دخول مالك التطبيق'), findsNothing);
+  tester
+      .state<NavigatorState>(find.byType(Navigator))
+      .pushNamed(ServickRoutes.adminLogin);
   await tester.pumpAndSettle();
 }
 

@@ -141,32 +141,34 @@ class ClientHomeScreen extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.card_membership),
-                  label: const Text('باقات اشتراك العملاء'),
+                  label: const Text('اشتراك العملاء'),
                 ),
               ),
-              Center(
-                child: TextButton.icon(
-                  key: const Key('open-admin-login'),
-                  onPressed: () {
-                    Navigator.of(context).pushNamed(ServickRoutes.adminLogin);
-                  },
-                  icon: const Icon(Icons.admin_panel_settings_outlined),
-                  label: const Text('دخول مالك التطبيق'),
+              if (model.adminUnlocked)
+                Center(
+                  child: TextButton.icon(
+                    key: const Key('open-admin-login'),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(ServickRoutes.adminLogin);
+                    },
+                    icon: const Icon(Icons.admin_panel_settings_outlined),
+                    label: const Text('دخول مالك التطبيق'),
+                  ),
                 ),
-              ),
               Center(
                 child: TextButton(
                   key: const Key('open-owner-plans'),
                   onPressed: () {
                     Navigator.of(context).pushNamed(
                       ServickRoutes.clientSubscription,
-                      arguments: const ClientSubscriptionArgs(
-                        clientId: demoClientId,
-                        isAdmin: true,
+                      arguments: ClientSubscriptionArgs(
+                        clientId: model.clientSession?.id ?? '',
+                        isAdmin: model.adminUnlocked,
+                        catalog: true,
                       ),
                     );
                   },
-                  child: const Text('معاينة باقة المالك'),
+                  child: const Text('باقات الاشتراك'),
                 ),
               ),
               _ClientPlanNote(
