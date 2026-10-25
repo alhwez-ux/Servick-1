@@ -7,6 +7,7 @@ import '../models/desk.dart';
 import '../models/models.dart';
 import '../models/order.dart';
 import '../models/provider.dart';
+import '../models/supervisor.dart';
 import 'providers.dart';
 import 'service_pictures.dart';
 
@@ -39,6 +40,8 @@ class SharedSnapshot {
     this.ownerEmail = '',
     this.ownerPasswordHash = '',
     this.ownerPasswordSalt = '',
+    this.supervisors = const [],
+    this.supervisorSequence = 0,
   });
 
   final int revision;
@@ -68,6 +71,8 @@ class SharedSnapshot {
   final String ownerEmail;
   final String ownerPasswordHash;
   final String ownerPasswordSalt;
+  final List<SupervisorAccount> supervisors;
+  final int supervisorSequence;
 
   static SharedSnapshot empty() {
     return SharedSnapshot(
@@ -167,6 +172,13 @@ class SharedSnapshot {
         ownerEmail: _owner(json['owner']).email,
         ownerPasswordHash: _owner(json['owner']).hash,
         ownerPasswordSalt: _owner(json['owner']).salt,
+        supervisors: [
+          for (final item in _list(json['supervisors']))
+            _supervisor(_map(item)),
+        ],
+        supervisorSequence: json['supervisorSequence'] == null
+            ? 0
+            : _int(json['supervisorSequence']),
       );
     } catch (_) {
       return null;
@@ -347,6 +359,19 @@ class SharedSnapshot {
         'passwordHash': ownerPasswordHash,
         'passwordSalt': ownerPasswordSalt,
       },
+      'supervisors': [
+        for (final supervisor in supervisors)
+          {
+            'id': supervisor.id,
+            'name': supervisor.name,
+            'phone': supervisor.phone,
+            'passwordHash': supervisor.passwordHash,
+            'passwordSalt': supervisor.passwordSalt,
+            'email': supervisor.email,
+            'at': supervisor.createdAt.toUtc().toIso8601String(),
+          },
+      ],
+      'supervisorSequence': supervisorSequence,
     };
   }
 
@@ -507,6 +532,22 @@ SharedSnapshot mergeSnapshots({
     ownerEmail: _ownerPick(base, local, remote).email,
     ownerPasswordHash: _ownerPick(base, local, remote).hash,
     ownerPasswordSalt: _ownerPick(base, local, remote).salt,
+    supervisors: _mergeById(
+      base: base.supervisors,
+      local: local.supervisors,
+      remote: remote.supervisors,
+      idOf: (item) => item.id,
+      toJson: (item) => {
+        'name': item.name,
+        'phone': item.phone,
+        'email': item.email,
+        'passwordHash': item.passwordHash,
+      },
+    ),
+    supervisorSequence: _max(
+      local.supervisorSequence,
+      remote.supervisorSequence,
+    ),
   );
 }
 
@@ -556,6 +597,8 @@ SharedSnapshot _copy(SharedSnapshot snapshot, {required int revision}) {
     ownerEmail: snapshot.ownerEmail,
     ownerPasswordHash: snapshot.ownerPasswordHash,
     ownerPasswordSalt: snapshot.ownerPasswordSalt,
+    supervisors: snapshot.supervisors,
+    supervisorSequence: snapshot.supervisorSequence,
   );
 }
 
@@ -807,6 +850,18 @@ ProviderAccount _provider(Map<String, dynamic> json) {
     subscriptionStatus: json['status'] as String,
     subscriptionExpiry: _date(json['expiry']),
     email: json['email'] as String? ?? '',
+  );
+}
+
+SupervisorAccount _supervisor(Map<String, dynamic> json) {
+  return SupervisorAccount(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    phone: json['phone'] as String,
+    passwordHash: json['passwordHash'] as String,
+    passwordSalt: json['passwordSalt'] as String,
+    email: json['email'] as String? ?? '',
+    createdAt: _date(json['at']) ?? DateTime.utc(2026, 10, 25),
   );
 }
 

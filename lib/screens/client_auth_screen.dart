@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_scope.dart';
 import '../models/models.dart';
+import '../routes.dart';
 import '../theme/servick_theme.dart';
 import '../widgets/account_security.dart';
 import '../widgets/servick_scaffold.dart';
@@ -52,6 +53,22 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
     }
     final model = AppScope.of(context);
     model.acceptPrivacy(audience: 'client');
+    if (!_register) {
+      final portal = model.loginPortal(
+        phone: _phone.text,
+        password: _password.text,
+      );
+      if (portal == 'owner' || portal == 'supervisor') {
+        if (!context.mounted) return;
+        Navigator.of(context)
+            .pushReplacementNamed(ServickRoutes.adminDashboard);
+        return;
+      }
+      if (portal != null) {
+        _snack(portal);
+        return;
+      }
+    }
     if (_register) {
       final error = model.registerClient(
         name: _name.text,
@@ -81,7 +98,7 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
   @override
   Widget build(BuildContext context) {
     return ServickScaffold(
-      title: _register ? 'إنشاء حساب عميل' : 'دخول العميل',
+      title: _register ? 'إنشاء حساب عميل' : 'تسجيل الدخول',
       showCity: false,
       body: ServickFrame(
         maxWidth: 560,
@@ -90,7 +107,7 @@ class _ClientAuthScreenState extends State<ClientAuthScreen> {
           children: [
             if (!_register) ...[
               const Text(
-                'ادخل برقم الجوال وكلمة المرور التي سجّلت بها.',
+                'ادخل برقم الجوال وكلمة المرور. المالك والمشرف يدخلان من هنا.',
                 style: TextStyle(color: ServickColors.muted, height: 1.6),
               ),
               const SizedBox(height: 16),

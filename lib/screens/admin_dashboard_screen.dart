@@ -20,9 +20,9 @@ class AdminDashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'لوحة تحكم المالك | رابط',
-          style: TextStyle(fontFamily: 'Cairo', fontSize: 16),
+        title: Text(
+          model.isOwner ? 'لوحة تحكم المالك | رابط' : 'لوحة المشرف | رابط',
+          style: const TextStyle(fontFamily: 'Cairo', fontSize: 16),
         ),
         backgroundColor: ServickColors.navy,
         actions: [
@@ -90,8 +90,12 @@ class AdminDashboardScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16),
-              const PasswordChangeCard(audience: 'owner'),
-              const SizedBox(height: 8),
+              if (model.isOwner) ...[
+                const PasswordChangeCard(audience: 'owner'),
+                const SizedBox(height: 8),
+                const _SupervisorsCard(),
+                const SizedBox(height: 8),
+              ],
               const _FreeMonthsCard(),
               const SizedBox(height: 16),
               if (wide)
@@ -495,6 +499,124 @@ class _DeletionRequests extends StatelessWidget {
               ),
             ),
       ],
+    );
+  }
+}
+
+class _SupervisorsCard extends StatefulWidget {
+  const _SupervisorsCard();
+
+  @override
+  State<_SupervisorsCard> createState() => _SupervisorsCardState();
+}
+
+class _SupervisorsCardState extends State<_SupervisorsCard> {
+  final _name = TextEditingController();
+  final _phone = TextEditingController();
+  final _password = TextEditingController();
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  void _snack(String message) {
+    ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _add() {
+    final error = AppScope.of(context).addSupervisor(
+      name: _name.text,
+      phone: _phone.text,
+      password: _password.text,
+    );
+    if (error != null) {
+      _snack(error);
+      return;
+    }
+    _name.clear();
+    _phone.clear();
+    _password.clear();
+    _snack('تمت إضافة المشرف');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final model = AppScope.of(context);
+    return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'إضافة مشرفين',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'المشرف يدخل من بوابة الدخول الرئيسية برقم جواله وكلمة مروره، ويصل إلى لوحة التحكم.',
+              style: TextStyle(color: ServickColors.muted, height: 1.5),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              key: const Key('supervisor-name'),
+              controller: _name,
+              decoration: const InputDecoration(labelText: 'اسم المشرف'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              key: const Key('supervisor-phone'),
+              controller: _phone,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'جوال المشرف'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              key: const Key('supervisor-password'),
+              controller: _password,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'كلمة المرور'),
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              key: const Key('add-supervisor'),
+              onPressed: _add,
+              child: const Text('إضافة المشرف'),
+            ),
+            const SizedBox(height: 8),
+            if (model.supervisors.isEmpty)
+              const Text(
+                'لا يوجد مشرفون بعد.',
+                key: Key('supervisors-empty'),
+                style: TextStyle(color: ServickColors.muted, height: 1.5),
+              )
+            else
+              for (final supervisor in model.supervisors)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(supervisor.name),
+                  subtitle: Text(formatPhone(supervisor.phone)),
+                  trailing: IconButton(
+                    key: Key('supervisor-delete-${supervisor.id}'),
+                    tooltip: 'حذف المشرف',
+                    onPressed: () {
+                      final error = model.removeSupervisor(supervisor.id);
+                      if (error != null) _snack(error);
+                    },
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ),
+          ],
+        ),
+      ),
     );
   }
 }

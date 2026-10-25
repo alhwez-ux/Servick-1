@@ -20,6 +20,7 @@ import 'models/desk.dart';
 import 'models/models.dart';
 import 'models/order.dart';
 import 'models/provider.dart';
+import 'models/supervisor.dart';
 
 class AppModel extends ChangeNotifier {
   AppModel({
@@ -79,7 +80,9 @@ class AppModel extends ChangeNotifier {
   int _providerSequence = 0;
   int _technicianSequence = 0;
   int _deletionSequence = 0;
-  bool _adminUnlocked = false;
+  String? _adminRole;
+  final List<SupervisorAccount> _supervisors = [];
+  var _supervisorSequence = 0;
   bool _clientPrivacyAccepted = false;
   bool _providerPrivacyAccepted = false;
   final List<ServiceCategory> _extraCategories = [];
@@ -142,7 +145,9 @@ class AppModel extends ChangeNotifier {
           DeskRecipient(
             id: account.id,
             audience: 'provider',
-            name: technicianById(account.technicianId)?.name ?? 'مقدم خدمة بدون اسم',
+            name:
+                technicianById(account.technicianId)?.name ??
+                'مقدم خدمة بدون اسم',
             detail: account.phone,
           ),
       ];
@@ -193,7 +198,11 @@ class AppModel extends ChangeNotifier {
       .where((request) => request.status == 'pending')
       .toList();
 
-  bool get adminUnlocked => _adminUnlocked;
+  bool get adminUnlocked => _adminRole != null;
+
+  bool get isOwner => _adminRole == 'owner';
+
+  List<SupervisorAccount> get supervisors => List.unmodifiable(_supervisors);
 
   bool get clientPrivacyAccepted => _clientPrivacyAccepted;
 
@@ -407,12 +416,84 @@ class AppModel extends ChangeNotifier {
     return null;
   }
 
-  void unlockAdmin() {
-    if (!_adminUnlocked) {
-      _adminUnlocked = true;
-      notifyListeners();
-    }
+  void unlockAdmin({String role = 'owner'}) {
+    _adminRole = role;
+    notifyListeners();
     _enqueue(_refresh);
+  }
+
+  /// Owner and supervisors sign in from the main login.
+  /// Returns `owner` or `supervisor` on success, an error when the phone
+  /// belongs to staff but the password does not, and null for other phones.
+  String? loginPortal({required String phone, required String password}) {
+    final phoneError = validateSaudiMobile(phone);
+    if (phoneError != null) return phoneError;
+    final normalized = normalizeSaudiMobile(phone);
+    if (normalized == ownerMobile) {
+      if (!ownerPasswordMatches(password)) return 'كلمة المرور غير صحيحة';
+      unlockAdmin(role: 'owner');
+      return 'owner';
+    }
+    final supervisor = supervisorByPhone(normalized);
+    if (supervisor == null) return null;
+    if (!supervisor.matchesPassword(password)) return 'كلمة المرور غير صحيحة';
+    unlockAdmin(role: 'supervisor');
+    return 'supervisor';
+  }
+
+  SupervisorAccount? supervisorByPhone(String phone) {
+    final normalized = normalizeSaudiMobile(phone);
+    for (final account in _supervisors) {
+      if (account.phone == normalized) return account;
+    }
+    return null;
+  }
+
+  String? addSupervisor({
+    required String name,
+    required String phone,
+    required String password,
+    String email = '',
+  }) {
+    if (_adminRole == 'supervisor') return 'إضافة المشرفين للمالك فقط';
+    final cleanName = name.trim();
+    if (cleanName.isEmpty) return 'اكتب الاسم';
+    if (cleanName.length > 40) return 'الاسم أطول من أربعين حرفاً';
+    final phoneError = validateSaudiMobile(phone);
+    if (phoneError != null) return phoneError;
+    if (password.trim().length < 6) return 'كلمة المرور ستة أحرف على الأقل';
+    final cleanEmail = foldEmail(email);
+    if (cleanEmail.isNotEmpty) {
+      final emailError = validateAccountEmail(cleanEmail);
+      if (emailError != null) return emailError;
+      if (_emailTaken(cleanEmail)) return 'هذا البريد مسجّل من قبل';
+    }
+    final normalized = normalizeSaudiMobile(phone);
+    if (_phoneTaken(normalized)) return 'هذا الجوال مسجّل من قبل';
+    _supervisorSequence += 1;
+    final salt = newSalt();
+    _supervisors.add(
+      SupervisorAccount(
+        id: 'sup-$_supervisorSequence',
+        name: cleanName,
+        phone: normalized,
+        passwordHash: hashPassword(password.trim(), salt),
+        passwordSalt: salt,
+        email: cleanEmail,
+        createdAt: _now(),
+      ),
+    );
+    _touch();
+    return null;
+  }
+
+  String? removeSupervisor(String id) {
+    if (_adminRole == 'supervisor') return 'حذف المشرفين للمالك فقط';
+    final removed = _supervisors.length;
+    _supervisors.removeWhere((account) => account.id == id);
+    if (_supervisors.length == removed) return 'المشرف غير موجود';
+    _touch();
+    return null;
   }
 
   ClientSubscription? clientSubscription(String clientId) => _clients[clientId];
@@ -887,6 +968,9 @@ class AppModel extends ChangeNotifier {
     for (final account in _providers) {
       if (foldEmail(account.email) == clean) return true;
     }
+    for (final account in _supervisors) {
+      if (foldEmail(account.email) == clean) return true;
+    }
     return false;
   }
 
@@ -1265,7 +1349,11 @@ class AppModel extends ChangeNotifier {
   }
 
   bool _phoneTaken(String phone) {
-    return clientByPhone(phone) != null || providerByPhone(phone) != null;
+    final normalized = normalizeSaudiMobile(phone);
+    if (normalized == ownerMobile) return true;
+    return clientByPhone(phone) != null ||
+        providerByPhone(phone) != null ||
+        supervisorByPhone(phone) != null;
   }
 
   String? registerClient({
@@ -1634,6 +1722,8 @@ class AppModel extends ChangeNotifier {
       ownerEmail: _ownerEmail,
       ownerPasswordHash: _ownerPasswordHash,
       ownerPasswordSalt: _ownerPasswordSalt,
+      supervisors: List<SupervisorAccount>.from(_supervisors),
+      supervisorSequence: _supervisorSequence,
     );
   }
 
@@ -1685,6 +1775,13 @@ class AppModel extends ChangeNotifier {
     _deletionRequests
       ..clear()
       ..addAll(snapshot.deletionRequests);
+    _supervisors
+      ..clear()
+      ..addAll(snapshot.supervisors);
+    _supervisorSequence = _maxSeq(
+      snapshot.supervisorSequence,
+      _maxSuffix(snapshot.supervisors.map((item) => item.id), 'sup-'),
+    );
     _serviceSequence = _maxSeq(
       snapshot.serviceSequence,
       _maxSuffix(snapshot.services.map((item) => item.id), 'custom-'),

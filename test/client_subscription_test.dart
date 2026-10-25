@@ -140,6 +140,7 @@ void main() {
     expect(find.text('دخول مالك التطبيق'), findsNothing);
     expect(find.text('اشتراك العملاء'), findsOneWidget);
     expect(find.text('باقات الاشتراك'), findsOneWidget);
+    expect(find.byKey(const Key('plans-avatar')), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(const Key('open-owner-plans')));
     await tester.tap(find.byKey(const Key('open-owner-plans')));

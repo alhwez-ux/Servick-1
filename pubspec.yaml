@@ -31,6 +31,7 @@ flutter:
     - assets/brand/rabitt_mark.png
     - assets/brand/rabitt_wordmark.png
     - assets/brand/hood_open.jpg
+    - assets/brand/plans_avatar.png
     - assets/services/
   fonts:
     - family: Cairo

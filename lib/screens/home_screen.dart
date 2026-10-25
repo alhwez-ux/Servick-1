@@ -155,21 +155,17 @@ class ClientHomeScreen extends StatelessWidget {
                     label: const Text('دخول مالك التطبيق'),
                   ),
                 ),
-              Center(
-                child: TextButton(
-                  key: const Key('open-owner-plans'),
-                  onPressed: () {
-                    Navigator.of(context).pushNamed(
-                      ServickRoutes.clientSubscription,
-                      arguments: ClientSubscriptionArgs(
-                        clientId: model.clientSession?.id ?? '',
-                        isAdmin: model.adminUnlocked,
-                        catalog: true,
-                      ),
-                    );
-                  },
-                  child: const Text('باقات الاشتراك'),
-                ),
+              _PlansAvatar(
+                onTap: () {
+                  Navigator.of(context).pushNamed(
+                    ServickRoutes.clientSubscription,
+                    arguments: ClientSubscriptionArgs(
+                      clientId: model.clientSession?.id ?? '',
+                      isAdmin: model.adminUnlocked,
+                      catalog: true,
+                    ),
+                  );
+                },
               ),
               _ClientPlanNote(
                 subscription: model.clientSession == null
@@ -188,6 +184,73 @@ class ClientHomeScreen extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlansAvatar extends StatelessWidget {
+  const _PlansAvatar({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: ServickColors.line),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: const Key('open-owner-plans'),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'assets/brand/plans_avatar.png',
+                    key: const Key('plans-avatar'),
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                    semanticLabel: 'صورة باقات الاشتراك',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'باقات الاشتراك',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'باقة مزودي الخدمة بـ 100 ريال لعام كامل',
+                        style: TextStyle(
+                          color: ServickColors.muted,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_left, color: ServickColors.navy),
+              ],
+            ),
           ),
         ),
       ),
