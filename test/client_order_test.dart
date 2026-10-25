@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:servick/app_scope.dart';
 import 'package:servick/data/client_plans.dart';
 import 'package:servick/main.dart';
+import 'package:servick/models/models.dart';
+import 'package:servick/routes.dart';
 
 import 'support/accounts.dart';
 
@@ -175,4 +177,34 @@ void main() {
       expect(find.byKey(Key('accept-order-${published.id}')), findsOneWidget);
     },
   );
+
+  testWidgets('order details omit the footer guidance', (tester) async {
+    final model = AppModel();
+    final request = model.submit(
+      kind: RequestKind.emergency,
+      categoryId: 'petrol',
+      city: 'خميس مشيط',
+      summary: 'إطار مثقوب',
+      details: 'الموقع: جامع الحويزي الراقي',
+      phone: '0542582585',
+      whenLabel: 'فوراً',
+      assignNow: false,
+    );
+    await tester.pumpWidget(ServickApp(model: model));
+    await tester.pump();
+    tester
+        .state<NavigatorState>(find.byType(Navigator))
+        .pushNamed(
+          ServickRoutes.request,
+          arguments: RequestRouteArgs(request: request),
+        );
+    await tester.pumpAndSettle();
+
+    expect(find.text('تفاصيل الطلب'), findsOneWidget);
+    expect(find.text('بانتظار فني'), findsOneWidget);
+    expect(find.text(request.id), findsOneWidget);
+    expect(find.textContaining('إطار مثقوب'), findsOneWidget);
+    expect(find.textContaining('الدفع محاكاة'), findsNothing);
+    expect(find.textContaining('تُحفظ على الويب'), findsNothing);
+  });
 }

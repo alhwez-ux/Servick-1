@@ -114,8 +114,6 @@ class RequestDetailsScreen extends StatelessWidget {
             ],
             const SizedBox(height: 12),
             ProviderRatingPanel(requestId: request.id),
-            const SizedBox(height: 12),
-            const DemoNote(),
             if (justSent) ...[
               const SizedBox(height: 18),
               FilledButton(

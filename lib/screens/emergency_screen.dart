@@ -7,7 +7,6 @@ import '../data/phone.dart';
 import '../models/models.dart';
 import '../routes.dart';
 import '../theme/servick_theme.dart';
-import '../widgets/common.dart';
 import '../widgets/privacy_gate.dart';
 import '../widgets/hood_open_scene.dart';
 import '../widgets/copy_phone.dart';
@@ -349,8 +348,6 @@ class _EmergencyResult extends StatelessWidget {
             const SizedBox(height: 16),
             ProviderRatingPanel(requestId: request.id),
           ],
-          const SizedBox(height: 12),
-          const DemoNote(),
           const SizedBox(height: 18),
           FilledButton(
             onPressed: () {
